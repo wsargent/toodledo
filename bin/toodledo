@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+=begin
+  Toodledo client.
+=end
+# Add the lib directory to the ruby search path.
+$: << File.expand_path(File.dirname(__FILE__) + "/../lib")
+
+require 'toodledo'
+require 'yaml'
+
+# Load in the username and password
+# 
+rc = File.expand_path("~/.toodledo")
+exists = File.exist? rc
+config = exists ? YAML.load_file(rc) : {}
+
+userid = config['userid']
+password = config['password']
+
+# Handle the command line processing
+
+# Get tasks
+
+# Add tasks
+
+# Toodledo config (will create .toodledo file with specs)
+
+# Loose style (* indicates folder, !!! indicates priority etc)
+
+# "toodledo important" (pipe this through 'say' if you're on an Apple)
+
+session = Toodledo::Session.new(userid, password)
+# session.debug = true
+
+tasks = session.get_tasks({ :notcomp => true, :folder => 'action', :priority => 3 })
+
+tasks.sort! do |a,b|  
+  b.priority <=> a.priority
+end
+
+for task in tasks
+  puts "#{task.title} #{task.context.name}.\n"
+end
+
+exit 0

@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+# Add the lib directory to the ruby search path.
+$: << File.expand_path(File.dirname(__FILE__) + "/../lib")
+
+require 'toodledo'
+require 'yaml'
+
+if ARGV.length == 0
+	puts "Usage: <title>"
+	exit 0
+end
+
+# Load in the username and password
+# 
+cred_file = File.expand_path('~/.toodledo')
+credentials = YAML::load_file(cred_file)
+userid = credentials['userid']
+password = credentials['password']
+
+title = ARGV[0]
+  
+session = Toodledo::Session.new(userid, password)
+#session.debug = true
+
+#params = { 
+#  :folder => 'Inbasket', 
+#  :context => 'Home',
+#  :goal => 'Bike every weekend',
+#  :duedate => Time.now,
+#  :priority => :top, 
+#  :repeat => :weekly, 
+#  :tag => 'flubber', 
+#  :length => 60 
+#}
+
+params = { :folder => "Inbasket", :priority => "medium" }
+result = session.add_task(title, params)
+
+exit 0
