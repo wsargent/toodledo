@@ -1,5 +1,21 @@
 == 1.0.0 / 2008-01-20
 
-* 1 major enhancement
-  * Birthday!
+* Task functionality
+  * Get Task
+  * Add task
+  * Edit task
+  * Delete task
+* Folder functionality
+  * Get Folder
+  * Add Folder
+  * Edit Folder
+  * Delete Folder
+* Context functionality
+  * Get Contexts
+  * Add Context
+  * Delete Context
+* Goal Functionality
+  * Get Goals
+  * Add Goal
+  * Delete Goal
 
