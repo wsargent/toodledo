@@ -105,7 +105,7 @@ module Toodledo
       return "#{fancyp} *[#{folder.name}] @[#{context.name}] #{title}"      
     end
 
-    def inspect()
+    def to_xml()
       return <<-HERE
        <task>
           <id>#{@id}</id>
@@ -131,6 +131,5 @@ module Toodledo
     end
     
   end
-  
   
 end

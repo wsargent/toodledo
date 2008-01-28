@@ -1,9 +1,11 @@
 # Load all the other files in.
-require 'toodledo/session'
+require 'toodledo/server_error'
+require 'toodledo/item_not_found_error'
 require 'toodledo/task'
 require 'toodledo/context'
 require 'toodledo/goal'
 require 'toodledo/folder'
+require 'toodledo/session'
 
 module Toodledo
 
@@ -48,5 +50,4 @@ module Toodledo
   def self.set_config(override_config)
     @@config = override_config
   end
-  
 end

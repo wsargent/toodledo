@@ -1,17 +1,19 @@
 require 'digest/md5'
 require 'uri'
-require 'open-uri'
+require 'net/http'
+require 'net/https'
+require 'openssl/ssl'
 require 'rexml/document'
 
 module Toodledo
-
+  
   #
   # The Session.  This is responsible for calling to the server
   # and handling most functionality.
   #
   class Session
     
-    BASE_API_URL = 'http://www.toodledo.com/api.php'
+    DEFAULT_API_URL = 'http://www.toodledo.com/api.php'
 
     USER_AGENT = "Toodledo Ruby Client (#{VERSION})"
     
@@ -50,7 +52,11 @@ module Toodledo
     def debug=(debug_flag)
       @debug_flag = debug_flag
     end
-
+    
+    def get_base_url()
+      return @base_url
+    end
+    
     def log(message)
       time = Time.now
       date_format = time.strftime("%Y-%m-%d %H:%M:%S.") + time.usec.to_s
@@ -68,8 +74,9 @@ module Toodledo
     end
     
     # Connects to the server, asking for a new key that's good for an hour.
-    def connect()
-      log("connect()") if (debug?)
+    # Optionally takes a base URL as a parameter.  Defaults to DEFAULT_API_URL.
+    def connect(base_url = DEFAULT_API_URL, proxy = nil)
+      log("connect(#{base_url}, #{proxy.inspect})") if (debug?)
 
       # XXX It looks like get_user_id doesn't work reliably.  It always
       # returns 1 even when we pass in a valid email and password.
@@ -83,7 +90,12 @@ module Toodledo
       if (@user_id == '0')
         raise "Server says we have a blank email or password"
       end
- 
+      
+      @base_url = base_url
+      
+      # Get the proxy information if it exists.
+      @proxy = proxy
+      
       session_token = get_token(@user_id)
       key = md5(md5(@password).to_s + session_token + @user_id);
       
@@ -103,13 +115,18 @@ module Toodledo
     #
     def self.begin()
       config = Toodledo.get_config()
-      
-      credentials = config['credentials']
-      user_id = credentials['user_id']
-      password = credentials['password']
+            
+      proxy = safe_get(config, :proxy)
+            
+      connection = safe_get(config, :connection)
+      base_url = safe_get(connection, :url)
+      user_id = safe_get(connection, :user_id)
+      password = safe_get(connection, :password)
       
       session = Session.new(user_id, password)
-      session.connect()
+
+      base_url = DEFAULT_API_URL if (base_url == nil)
+      session.connect(base_url, proxy)
       
       if (block_given?)
         yield(session)
@@ -118,11 +135,36 @@ module Toodledo
       session.disconnect()
     end
     
+    # Gets the value out of the hash, trying both the
+    # string and symbol versions of the key.  This gets
+    # around the godawful habit YAML has of using strings.
+    def self.safe_get(hash, key)
+      raise "Nil key" if (key == nil)
+      return nil if (hash == nil)
+      
+      value = hash[key]
+      return value if (value != nil)
+      
+      if (key.kind_of? String)
+        value = hash[key.intern]
+      end
+      return value if (value != nil)
+      
+      if (key.kind_of? Symbol)
+        value = hash[key.to_s]
+      end
+      
+      # Return null if we can't find anything here.
+      return value
+    end
+    
     # Disconnects from the server.
     def disconnect()
       log("disconnect()") if (debug?)
       @key = nil
       @start_time = nil
+      @base_url = nil
+      @proxy = nil
     end
 
     # Returns true if the session has expired.
@@ -137,7 +179,7 @@ module Toodledo
 
     # Returns a parsable URI object from the base API URL and the parameters.
     def get_url(method, params)
-      url_string = URI.escape(BASE_API_URL + '?method=' + method + params)
+      url_string = URI.escape(get_base_url() + '?method=' + method + params)
       return URI.parse(url_string)
     end
 
@@ -168,20 +210,50 @@ module Toodledo
       }
       url = get_url(method, stringified_params)
 
-      start_time = Time.now    
-      if (debug?) 
-        log("call[#{method}] request: " + url.to_s)
-      end
-
       # If it's been more than an hour, then ask for a new key.
       if (@key != nil && expired?)
-        log("call[#{method}] connection expired, reconnecting...")
+        log("call[#{method}] connection expired, reconnecting...") if (debug?)
+        
+        # Save the connection information (we'll need it)
+        base_url = @base_url
+        proxy = @proxy
         disconnect() # ensures that key == nil, which is crucial to avoid an endless loop...
-        connect()
+        connect(base_url, proxy)
       end
 
-      body = url.read
+      # Establish the proxy
+      if (proxy != nil)
+        log("call[#{method}] establishing proxy...") if (debug?)
+        
+        proxy_host = safe_get(proxy, :host)
+        proxy_port = safe_get(proxy, :port)
+        proxy_user = safe_get(proxy, :user)
+        proxy_password = safe_get(proxy, :password)
+        
+        if (user == nil || password == nil)
+          http = Net::HTTP::Proxy(proxy_host, proxy_port).new(url.host, url.port)
+        else 
+          http = Net::HTTP::Proxy(proxy_host, proxy_port, proxy_user, proxy_password).new(url.host, url.port)
+        end        
+      else 
+        http = Net::HTTP.new(url.host, url.port)
+      end       
+      
+      if (url.scheme == 'https')        
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        http.use_ssl = true
+      end
+      
+      if (debug?) 
+        log("call[#{method}] request: #{url.path}?#{url.query}#{url.fragment}")
+      end
+      start_time = Time.now
+      
+      # make the call
+      response = http.request_get(url.path + '?' +url.query)
+      body = response.body
 
+      # body = url.read
       end_time = Time.now
       doc = REXML::Document.new body
 
@@ -192,7 +264,12 @@ module Toodledo
 
       root_node = doc.root
       if (root_node.name == 'error')
-        raise "Server error: " + root_node.text  
+        error_text = root_node.text
+        if (error_text == 'Invalid ID number')
+          raise ItemNotFoundError.new()
+        else
+          raise ServerError.new(error_text)
+        end
       end
 
       return root_node
@@ -230,8 +307,7 @@ module Toodledo
       log("get_tasks(#{params})") if (debug?)
       myhash = {}
     
-      # * title : A text string up to 255 characters. Boolean operators do not work yet, 
-      #   so your search will be for a single phrase. Please encode the & character as %26 and the ; character as %3B.
+      # * title : A text string up to 255 characters.
       handle_string(myhash, params, :title)
     
       # If the folder is a string, then we assume we're supposed to find out what
@@ -256,35 +332,46 @@ module Toodledo
       # priority use the map to change from the symbol to the raw numeric value.
       handle_priority(myhash, params)
           
-      # * parent : This is used to Pro accounts that have access to subtasks. Set this to the id number of the parent task and 
-      # you will get its subtasks. The default is 0, which is a special number that returns tasks that do not have a parent.
+      # * parent : This is used to Pro accounts that have access to subtasks. 
+      # Set this to the id number of the parent task and you will get its 
+      # subtasks. The default is 0, which is a special number that returns 
+      # tasks that do not have a parent.
       handle_parent(myhash, params)
     
-      # * shorter : An integer representing minutes. This is used for finding tasks with a duration that is shorter than the specified number of minutes.
+      # * shorter : An integer representing minutes. This is used for finding 
+      # tasks with a duration that is shorter than the specified number of minutes.
       handle_number(myhash, params, :shorter)
     
-      # * longer : An integer representing minutes. This is used for finding tasks with a duration that is longer than the specified number of minutes.
+      # * longer : An integer representing minutes. This is used for finding 
+      # tasks with a duration that is longer than the specified number of minutes.
       handle_number(myhash, params, :longer)
     
-      # * before : A date formated as YYYY-MM-DD. Used to find tasks with due-dates before this date.
+      # * before : A date formated as YYYY-MM-DD. Used to find tasks with
+      # due-dates before this date.
       handle_date(myhash, params, :before)
     
-      # * after : A date formated as YYYY-MM-DD. Used to find tasks with due-dates after this date.
+      # * after : A date formated as YYYY-MM-DD. Used to find tasks with 
+      # due-dates after this date.
       handle_date(myhash, params, :after)
     
-      # * modbefore : A date-time formated as YYYY-MM-DD HH:MM:SS. Used to find tasks with a modified date and time before this dateand time.
+      # * modbefore : A date-time formated as YYYY-MM-DD HH:MM:SS. Used to find 
+      # tasks with a modified date and time before this dateand time.
       handle_datetime(myhash, params, :modbefore)
     
-      # * modafter : A date-time formated as YYYY-MM-DD HH:MM:SS. Used to find tasks with a modified date and time after this dateand time.
+      # * modafter : A date-time formated as YYYY-MM-DD HH:MM:SS. Used to find 
+      # tasks with a modified date and time after this dateand time.
       handle_datetime(myhash, params, :modafter)
     
-      # * compbefore : A date formated as YYYY-MM-DD. Used to find tasks with a completed date before this date.
+      # * compbefore : A date formated as YYYY-MM-DD. Used to find tasks with a
+      # completed date before this date.
       handle_date(myhash, params, :compbefore)
     
-      # * compafter : A date formated as YYYY-MM-DD. Used to find tasks with a completed date after this date.
+      # * compafter : A date formated as YYYY-MM-DD. Used to find tasks with a 
+      # completed date after this date.
       handle_date(myhash, params, :compafter)
     
-      # * notcomp : Set to 1 to omit completed tasks. Omit variable, or set to 0 to retrieve both completed and uncompleted tasks.
+      # * notcomp : Set to 1 to omit completed tasks. Omit variable, or set to 0
+      # to retrieve both completed and uncompleted tasks.
       handle_boolean(myhash, params, :notcomp)
     
       result = call('getTasks', myhash, @key)
@@ -341,7 +428,8 @@ module Toodledo
     # duedate: Time or String object "YYYY-MM-DD" }
     # duetime: Time or String object "MM:SS p"}    
     # parent: parent id }
-    # repeat: one of { :none, :weekly, :monthly :yearly :daily :biweekly, :bimonthly, :semiannually, :quarterly }
+    # repeat: one of { :none, :weekly, :monthly :yearly :daily :biweekly, 
+    #         :bimonthly, :semiannually, :quarterly }
     # length: a Number, number of minutes
     # priority: one of { :negative, :low, :medium, :high, :top }
     #
@@ -387,14 +475,23 @@ module Toodledo
     end
        
     # * id : The id number of the task to edit.
-    # * title : A text string up to 255 characters representing the name of the task. Please encode the & character as %26 and the ; character as %3B.
-    # * tag : A text string up to 64 characters. Please encode the & character as %26 and the ; character as %3B.
-    # * folder : The id number of the folder (as returned from addFolder or getFolders). A value of 0 will set the task to "No Folder".
-    # * context : The id number of the context (as returned from getContexts). A value of 0 will set the task to "No Context".
-    # * goal : The id number of the goal (as returned from getGoals). A value of 0 will set the task to "No Goal".
-    # * completed : A boolean value (0 or 1) that describes if this task is completed or not.
-    # * duedate : A date formated as YYYY-MM-DD with an optional modifier attached to the front. Examples: "2007-01-23" , "=2007-01-23" , ">2007-01-23". To unset the date, set it to '0000-00-00'.
-    # * duetime : A date formated as HH:MM MM. Examples: 12:34 am, 4:56 pm. To unset the value, set it to 0.
+    # * title : A text string up to 255 characters representing the name of the
+    #   task. Please encode the & character as %26 and the ; character as %3B.
+    # * tag : A text string up to 64 characters. Please encode the & character
+    #   as %26 and the ; character as %3B.
+    # * folder : The id number of the folder (as returned from addFolder or 
+    #    getFolders). A value of 0 will set the task to "No Folder".
+    # * context : The id number of the context (as returned from getContexts). 
+    #   A value of 0 will set the task to "No Context".
+    # * goal : The id number of the goal (as returned from getGoals). A value 
+    #   of 0 will set the task to "No Goal".
+    # * completed : A boolean value (0 or 1) that describes if this task is 
+    #   completed or not.
+    # * duedate : A date formated as YYYY-MM-DD with an optional modifier 
+    #   attached to the front. Examples: "2007-01-23" , "=2007-01-23" ,
+    #   ">2007-01-23". To unset the date, set it to '0000-00-00'.
+    # * duetime : A date formated as HH:MM MM. Examples: 12:34 am, 4:56 pm. To
+    #   unset the value, set it to 0.
     # * repeat : An integer that represents how the tasks will repeat.
     #       o 0 = No Repeat
     #       o 1 = Weekly
@@ -405,17 +502,17 @@ module Toodledo
     #       o 6 = Bimonthly
     #       o 7 = Semiannually
     #       o 8 = Quarterly
-    # * length : An integer representing the number of minutes that the task will take to complete.
+    # * length : An integer representing the number of minutes that the task 
+    # will take to complete.
     # * priority : An integer that represents the priority.
     #       o -1 = Negative
     #       o 0 = Low
     #       o 1 = Medium
     #       o 2 = High
     #       o 3 = Top
-    # * note : A text string. Please encode the & character as %26 and the ; character as %3B.
-    #   
+    # * note : A text string.  
     def edit_task(id, params = {})
-      log("edit_task(#{id}, #{params})") if (debug?)
+      log("edit_task(#{id}, #{params.inspect})") if (debug?)
       raise "Nil id" if (id == nil)
       
       myhash = { :id => id }
@@ -440,6 +537,9 @@ module Toodledo
 
       # parent handling.
       handle_parent(myhash, params)
+      
+      # Handle completion.
+      handle_boolean(myhash, params, :completed)
 
       # repeat: use the map to change from the symbol to the raw numeric value.
       handle_repeat(myhash, params)
@@ -457,10 +557,10 @@ module Toodledo
     def delete_task(id)
       log("delete_task(#{id})") if (debug?)
       raise "Nil id" if (id == nil)
-      
+    
       result = call('deleteTask', { :id => id }, @key)
-      
-      return (result.text == '1')
+    
+      return (result.text == '1')    
     end    
 
     ############################################################################
@@ -613,8 +713,10 @@ module Toodledo
     end
       
     # title : A text string up to 255 characters.
-    # level : The integer 0, 1 or 2 specifying the level. The default is 0. (0=lifetime, 1=long-term, 2=short-term)
-    # contributes : The id number returned from the "getGoals" API call for the higher level goal that this goal contributes to.
+    # level : The integer 0, 1 or 2 specifying the level. The default is 0. 
+    #         (0=lifetime, 1=long-term, 2=short-term)
+    # contributes : The id number returned from the "getGoals" API call for the 
+    # higher level goal that this goal contributes to.
     def add_goal(title, level = 0, contributes = 0)
       log("add_goal(#{title}, #{level}, #{contributes})") if (debug?)
       raise "Nil title" if (title == nil)
@@ -707,7 +809,8 @@ module Toodledo
     end
   
     # * title : A text string up to 32 characters.
-    # * private : A boolean value (0 or 1) that describes if this folder can be shared. A value of 1 means that this folder is private.
+    # * private : A boolean value (0 or 1) that describes if this folder can be 
+    # shared. A value of 1 means that this folder is private.
     # return the folder id of the new item.
     def add_folder(title, is_private = 1)
       log("add_folder(#{title}, #{is_private})") if (debug?)
@@ -738,7 +841,8 @@ module Toodledo
     
     # * id : The id number of the folder to edit.
     # * title : A text string up to 32 characters.
-    # * private : A boolean value (0 or 1) that describes if this folder can be shared. A value of 1 means that this folder is private.
+    # * private : A boolean value (0 or 1) that describes if this folder can be 
+    # shared. A value of 1 means that this folder is private.
     # * archived : A boolean value (0 or 1) that describes if this folder is archived.
     def edit_folder(id, params = {})
       log("edit_folder(#{id}, #{params})") if (debug?)
@@ -856,7 +960,7 @@ module Toodledo
       if (folder != nil)        
         if (folder.kind_of? String)
           folder_obj = get_folder_by_name(folder)
-          raise "No folder found with name #{folder}" if (folder_obj == nil)  
+          raise NoItemFoundError.new("No folder found with name #{folder}") if (folder_obj == nil)  
           myhash.merge!({ :folder => folder_obj.server_id })
         end
       end 
@@ -867,6 +971,9 @@ module Toodledo
       if (context != nil)
         if (context.kind_of? String)
           context_obj = get_context_by_name(context)
+          if (context_obj == nil)
+            raise NoItemFoundError.new("No context found with name '#{context}'")
+          end
           myhash.merge!({ :context => context_obj.server_id })
         end
       end      
@@ -877,6 +984,9 @@ module Toodledo
       if (goal != nil)
         if (goal.kind_of? String)
           goal_obj = get_goal_by_name(goal)
+          if (goal_obj == nil)
+            raise NoItemFoundError.new("No goal found with name '#{goal}'")
+          end
           myhash.merge!({ :goal => goal_obj.server_id })
         end
       end
@@ -932,10 +1042,11 @@ module Toodledo
     end
   
     def validate_symbol(symbol, possible_keys)
-        if (! possible_keys.include?(symbol))
-          possible_values = possible_keys.keys.join(", ")
-          raise "symbol must be one of the following: " + possible_values
-        end
+      if (! possible_keys.include?(symbol))
+        possible_values = possible_keys.keys.join(", ")
+        raise "symbol must be one of the following: " + possible_values
+      end
     end
+    
   end
 end

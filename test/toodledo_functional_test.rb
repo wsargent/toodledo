@@ -12,14 +12,16 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
   include Toodledo
   
   def setup
+    base_url = 'http://www.toodledo.com/api.php'
+    
+    # (only used for functional testing)
     @email = 'will.sargent+toodledo_ruby_api@gmail.com'
     @user_id = 'td479be708d8bd7'
     @password = 'toodledo'
-  
-    # (only used for functional testing)
+    
     @session = Session.new(@user_id, @password)
     @session.debug = true
-    @session.connect()
+    @session.connect(base_url)
   end
   
   def teardown

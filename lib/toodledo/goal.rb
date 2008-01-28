@@ -28,7 +28,7 @@ module Toodledo
       return @id
     end
     
-    def inspect()
+    def to_xml()
       return "<goal id=\"#{@id}\" level=\"#{@level}\" contributes=\"#{@contributes.server_id}\" name=\"#{@name}\">"
     end
     
