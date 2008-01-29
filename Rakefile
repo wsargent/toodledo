@@ -2,7 +2,8 @@
 
 require 'rubygems'
 require 'hoe'
-require './lib/toodledo.rb'
+$:.unshift(File.dirname(__FILE__) + "/lib")
+require 'toodledo'
 
 Hoe.new('toodledo', Toodledo::VERSION) do |p|
   p.rubyforge_name = 'toodledo'

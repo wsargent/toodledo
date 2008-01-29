@@ -8,9 +8,6 @@ require 'cmdparse'
 require 'highline/import'
 
 require 'toodledo'
-require 'toodledo/server_error'
-require 'toodledo/item_not_found_error'
-
 
 #
 # The toodledo client.  This provides a command line based client to the 
