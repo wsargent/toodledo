@@ -492,10 +492,12 @@ class ToodledoClient
         else
           puts "'#{input}' is not a command: type help for a list"
         end
-      #rescue ServerError => se
-      #  puts "Server Error: #{se}"
-      rescue RuntimeError => nife
-        puts "Error: #{nife}"      
+      rescue Toodledo::ItemNotFoundError => infe
+        puts "Item not found: #{infe}"
+      rescue Toodledo::ServerError => se
+        puts "Server Error: #{se}"
+      rescue RuntimeError => re
+        puts "Error: #{re}"      
       end
     end # loop    
   end

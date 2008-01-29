@@ -225,10 +225,10 @@ module Toodledo
       if (proxy != nil)
         log("call[#{method}] establishing proxy...") if (debug?)
         
-        proxy_host = safe_get(proxy, :host)
-        proxy_port = safe_get(proxy, :port)
-        proxy_user = safe_get(proxy, :user)
-        proxy_password = safe_get(proxy, :password)
+        proxy_host = self.safe_get(proxy, :host)
+        proxy_port = self.safe_get(proxy, :port)
+        proxy_user = self.safe_get(proxy, :user)
+        proxy_password = self.safe_get(proxy, :password)
         
         if (user == nil || password == nil)
           http = Net::HTTP::Proxy(proxy_host, proxy_port).new(url.host, url.port)
@@ -266,9 +266,9 @@ module Toodledo
       if (root_node.name == 'error')
         error_text = root_node.text
         if (error_text == 'Invalid ID number')
-          raise ItemNotFoundError.new()
+          raise Toodledo::ItemNotFoundError.new(error_text)
         else
-          raise ServerError.new(error_text)
+          raise Toodledo::ServerError.new(error_text)
         end
       end
 
@@ -960,7 +960,7 @@ module Toodledo
       if (folder != nil)        
         if (folder.kind_of? String)
           folder_obj = get_folder_by_name(folder)
-          raise NoItemFoundError.new("No folder found with name #{folder}") if (folder_obj == nil)  
+          raise Toodledo::ItemNotFoundError.new("No folder found with name #{folder}") if (folder_obj == nil)  
           myhash.merge!({ :folder => folder_obj.server_id })
         end
       end 
@@ -972,7 +972,7 @@ module Toodledo
         if (context.kind_of? String)
           context_obj = get_context_by_name(context)
           if (context_obj == nil)
-            raise NoItemFoundError.new("No context found with name '#{context}'")
+            raise Toodledo::ItemNotFoundError.new("No context found with name '#{context}'")
           end
           myhash.merge!({ :context => context_obj.server_id })
         end
@@ -985,7 +985,7 @@ module Toodledo
         if (goal.kind_of? String)
           goal_obj = get_goal_by_name(goal)
           if (goal_obj == nil)
-            raise NoItemFoundError.new("No goal found with name '#{goal}'")
+            raise Toodledo::ItemNotFoundError.new("No goal found with name '#{goal}'")
           end
           myhash.merge!({ :goal => goal_obj.server_id })
         end
