@@ -91,6 +91,7 @@ module Toodledo
         raise "Server says we have a blank email or password"
       end
       
+      # Set the base URL.
       @base_url = base_url
       
       # Get the proxy information if it exists.
@@ -116,12 +117,12 @@ module Toodledo
     def self.begin()
       config = Toodledo.get_config()
             
-      proxy = safe_get(config, :proxy)
+      proxy = Toodledo.safe_get(config, :proxy)
             
-      connection = safe_get(config, :connection)
-      base_url = safe_get(connection, :url)
-      user_id = safe_get(connection, :user_id)
-      password = safe_get(connection, :password)
+      connection = Toodledo.safe_get(config, :connection)
+      base_url = Toodledo.safe_get(connection, :url)
+      user_id = Toodledo.safe_get(connection, :user_id)
+      password = Toodledo.safe_get(connection, :password)
       
       session = Session.new(user_id, password)
 
@@ -133,29 +134,6 @@ module Toodledo
       end
       
       session.disconnect()
-    end
-    
-    # Gets the value out of the hash, trying both the
-    # string and symbol versions of the key.  This gets
-    # around the godawful habit YAML has of using strings.
-    def self.safe_get(hash, key)
-      raise "Nil key" if (key == nil)
-      return nil if (hash == nil)
-      
-      value = hash[key]
-      return value if (value != nil)
-      
-      if (key.kind_of? String)
-        value = hash[key.intern]
-      end
-      return value if (value != nil)
-      
-      if (key.kind_of? Symbol)
-        value = hash[key.to_s]
-      end
-      
-      # Return null if we can't find anything here.
-      return value
     end
     
     # Disconnects from the server.
@@ -222,15 +200,15 @@ module Toodledo
       end
 
       # Establish the proxy
-      if (proxy != nil)
+      if (@proxy != nil)
         log("call[#{method}] establishing proxy...") if (debug?)
         
-        proxy_host = self.safe_get(proxy, :host)
-        proxy_port = self.safe_get(proxy, :port)
-        proxy_user = self.safe_get(proxy, :user)
-        proxy_password = self.safe_get(proxy, :password)
+        proxy_host = Toodledo.safe_get(proxy, :host)
+        proxy_port = Toodledo.safe_get(proxy, :port)
+        proxy_user = Toodledo.safe_get(proxy, :user)
+        proxy_password = Toodledo.safe_get(proxy, :password)
         
-        if (user == nil || password == nil)
+        if (proxy_user == nil || proxy_password == nil)
           http = Net::HTTP::Proxy(proxy_host, proxy_port).new(url.host, url.port)
         else 
           http = Net::HTTP::Proxy(proxy_host, proxy_port, proxy_user, proxy_password).new(url.host, url.port)
@@ -284,8 +262,9 @@ module Toodledo
       return result.text
     end
 
-    # Returns the user id.
-    
+    # Returns the user id.  As far as I can tell, this method is broken 
+    # and always returns false.
+    #
     # If the userid comes back as 0, it means that either the email 
     # or password that you sent was blank. If the userid comes back as 1, 
     # it means that the lookup failed. A valid userid will always be a 
