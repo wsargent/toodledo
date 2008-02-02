@@ -1,4 +1,5 @@
 # Load all the other files in.
+require 'yaml'
 require 'toodledo/server_error'
 require 'toodledo/item_not_found_error'
 require 'toodledo/task'
@@ -50,4 +51,38 @@ module Toodledo
   def self.set_config(override_config)
     @@config = override_config
   end
+  
+
+  #
+  # Provides a convenient way of connecting and running a session.
+  # 
+  # This method will use the default Toodledo.config method to get
+  # the user_id and password to connect
+  #
+  # Session.begin do |session|
+  #   session.add_task('foo')
+  # end
+  #
+  def self.begin()
+    config = Toodledo.get_config()
+          
+    proxy = config['proxy']
+          
+    connection = config['connection']
+    base_url = connection['url']
+    user_id = connection['user_id']
+    password = connection['password']
+    
+    session = Session.new(user_id, password)
+
+    base_url = Session::DEFAULT_API_URL if (base_url == nil)
+    session.connect(base_url, proxy)
+    
+    if (block_given?)
+      yield(session)
+    end
+    
+    session.disconnect()
+  end
+  
 end

@@ -117,12 +117,12 @@ module Toodledo
     def self.begin()
       config = Toodledo.get_config()
             
-      proxy = Toodledo.safe_get(config, :proxy)
+      proxy = config['proxy']
             
-      connection = Toodledo.safe_get(config, :connection)
-      base_url = Toodledo.safe_get(connection, :url)
-      user_id = Toodledo.safe_get(connection, :user_id)
-      password = Toodledo.safe_get(connection, :password)
+      connection = config['connection']
+      base_url = connection['url']
+      user_id = connection['user_id']
+      password = connection['password']
       
       session = Session.new(user_id, password)
 
