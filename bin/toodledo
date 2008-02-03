@@ -5,6 +5,7 @@ $: << File.expand_path(File.dirname(__FILE__) + "/../lib")
 
 require 'rubygems'
 require 'toodledo'
+require 'toodledo/command_line/client'
 
 client = Toodledo::CommandLine::Client.new
 exit client.main()
