@@ -38,6 +38,8 @@ module Toodledo
       :top => 3    
     }
     
+    EXPIRATION_TIME_IN_SECS = 60 * 60
+    
     def debug?
       return (@logger.level == Logger::DEBUG)
     end
@@ -154,7 +156,7 @@ module Toodledo
       # The key is only good for an hour.  If it's been over an hour, 
       # then we count it as expired.
       return true if (@start_time == nil)
-      return (Time.now - @start_time > (60 * 60))
+      return (Time.now - @start_time > EXPIRATION_TIME_IN_SECS)
     end
 
     # Returns a parsable URI object from the base API URL and the parameters.

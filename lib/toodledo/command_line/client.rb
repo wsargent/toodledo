@@ -1,7 +1,10 @@
 require 'rubygems'
+
 require 'cmdparse'
+require 'fileutils'
 require 'highline/import'
 require 'logger'
+require 'yaml'
 
 require 'toodledo/command_line/parser_helper'
 require 'toodledo/command_line/base_command'
@@ -12,6 +15,8 @@ require 'toodledo/command_line/edit_command'
 require 'toodledo/command_line/hotlist_command'
 require 'toodledo/command_line/complete_command'
 require 'toodledo/command_line/delete_command'
+require 'toodledo/command_line/setup_command'
+
 
 module Toodledo
   
@@ -24,12 +29,25 @@ module Toodledo
     class Client
       
       include Toodledo::CommandLine::ParserHelper
-            
-      def initialize()
+                
+      HOME = ENV["HOME"] || ENV["HOMEPATH"] || File::expand_path("~")
+      TOODLEDO_D = File::join(HOME, ".toodledo")
+      CONFIG_F = File::join(TOODLEDO_D, "user-config.yml")
+      
+      # We must use __FILE__ instead of DATA because this is now a library
+      # and DATA is relative to $0, not __FILE__.
+      CONFIG = File.read(__FILE__).split(/__END__/).last.gsub(/#\{(.*)\}/) { eval $1 }
+    
+      #
+      # Creates the client object.
+      #            
+      def initialize(userconfig=CONFIG_F, opts={})
         @filters = {}
-        @verbose = false        
-        @logger = Logger.new(STDOUT)
+        @logger = Logger.new(STDOUT)   
         @logger.level = Logger::ERROR
+        
+        @userconfig = test(?e, userconfig) ? IO::read(userconfig) : CONFIG
+        @userconfig = YAML.load(@userconfig).merge(opts)
       end
       
       def debug?        
@@ -43,28 +61,29 @@ module Toodledo
           @logger.level = Logger::ERROR
         end
       end
-      
-      def verbose?
-        return @verbose
-      end
-      
-      def verbose=(is_verbose)
-        @verbose = is_verbose
-      end
-      
+            
       def logger
         return @logger        
       end
-      
+            
+      #
+      # Invites the user to setup the YAML file.
+      #
+      def setup
+        FileUtils::mkdir_p TOODLEDO_D, :mode => 0700 unless test ?d, TOODLEDO_D
+        test ?e, CONFIG_F and FileUtils::mv CONFIG_F, "#{CONFIG_F}.bak"
+        config = CONFIG[/\A.*(?=^\# AUTOCONFIG)/m]
+        open(CONFIG_F, "w") { |f| f.write config }
+    
+        edit = (ENV["EDITOR"] || ENV["EDIT"] || "vi") + " '#{CONFIG_F}'"
+        system edit or puts "edit '#{CONFIG_F}'"
+      end
+
       # Sets the context filter.  Subsequent calls to show tasks
       # will only show tasks that have this context.
       # 
       def set_context_filter(session, input)
         session.debug = debug?
-        
-        regexp = /\s*context\s*(.*)/
-        md = regexp.match(input)
-        input = md[1]
         
         if (input == nil)
           input = ask("Selected context? > ") { |q| q.readline = true }
@@ -88,10 +107,6 @@ module Toodledo
       def set_folder_filter(session, input)
         session.debug = debug?
         
-        regexp = /\s*folder\s*(.*)/
-        md = regexp.match(input)
-        input = md[1]
-        
         if (input == nil)
           input = ask("Selected folder? > ") { |q| q.readline = true }
         end
@@ -112,11 +127,7 @@ module Toodledo
       #
       def set_goal_filter(session, input)
         session.debug = debug?
-        
-        regexp = /\s*goal\s*(.*)/
-        md = regexp.match(input)
-        input = md[1]
-        
+                
         if (input == nil)
           input = ask("Selected goal? > ") { |q| q.readline = true }
         end
@@ -165,9 +176,8 @@ module Toodledo
       #
       def unfilter()
         @filters = {}
-        puts "Filters cleared.\n" if (verbose?)
+        puts "Filters cleared.\n"
       end
-      
       
       #
       # Shows all the folders for this user.
@@ -250,10 +260,8 @@ module Toodledo
       def inbasket(session, input)
         session.debug = debug?
         
-        # The title is the rest of the line, if it exists.
-        regexp = /\s*in\s*(.*)/
-        md = regexp.match(input)
-        title = md[1] if (md != nil)
+        title = input
+        
         if (title == nil)
           title = ask("Task name: ") { |q| q.readline = true }
         end
@@ -378,19 +386,17 @@ module Toodledo
         
         session.edit_task(task_id, params)
         
-        puts "Task #{task_id} added." if (verbose?)
+        puts "Task #{task_id} edited."
       end
       
       # Masks the task as completed.  Uses a task id as argument.
       #
       # complete 123
       #
-      def complete_task(session, input)
+      def complete_task(session, line)
         session.debug = debug?
         
-        regexp = /\s*\w+\s*(.*)/
-        md = regexp.match(input)
-        task_id = md[1]
+        task_id = line
         
         if (task_id == nil)
           task_id = ask("Task ID?: ") { |q| q.readline = true }  
@@ -398,7 +404,7 @@ module Toodledo
         
         params = { :completed => 1 }
         if (session.edit_task(task_id, params))
-          puts "Task #{task_id} completed." if (verbose?)
+          puts "Task #{task_id} completed."
         else
           puts "Task #{task_id} could not be completed!"      
         end
@@ -418,13 +424,15 @@ module Toodledo
         end
         
         if (session.delete_task(task_id))
-          puts "Task #{task_id} deleted." if (verbose?)
+          puts "Task #{task_id} deleted."
         else
           puts "Task #{task_id} could not be deleted!"      
         end
       end
       
-      def main()
+      def main()                
+        # Set the configuration from the YAML file.
+        Toodledo.set_config(@userconfig)
         
         # Set up the command parser.
         graceful_exception = true
@@ -436,7 +444,6 @@ module Toodledo
         # Options (must be before help and version are added)
         cmd.options = CmdParse::OptionParserWrapper.new do |opt|
           opt.separator "Global options:"
-          opt.on("--verbose", "Be verbose when outputting info") {|t| self.verbose = true }
           opt.on("--debug", "Print debugging information") {|t| self.debug = true }
         end
         
@@ -449,7 +456,7 @@ module Toodledo
         cmd.add_command(CompleteCommand.new(self))
         cmd.add_command(DeleteCommand.new(self))
         cmd.add_command(HotlistCommand.new(self))
-        # cmd.add_command(ConfigCommand.new(self))
+        cmd.add_command(SetupCommand.new(self))
         
         cmd.add_command(CmdParse::HelpCommand.new)
         cmd.add_command(CmdParse::VersionCommand.new)
@@ -458,10 +465,39 @@ module Toodledo
         
         # Return a good exit status.
         return 0      
-      end
-      
-    end #class
-    
-  end
-  
+      end      
+    end #class    
+  end  
 end
+
+__END__
+#
+# The connection to Toodledo.
+#
+connection:
+#
+# If you have a Pro account, you can use HTTPS instead of HTTP
+  url: http://www.toodledo.com/api.php
+
+# 
+# If you are logged in to Toodledo, you should be able to see
+# your userid at this URL: 
+#
+# http://www.toodledo.com/info/api_doc.php
+#  
+  user_id: 
+  
+#
+# Your password
+#
+  password: 
+
+#
+# Uncomment this section if you are working through a proxy
+#
+#proxy:
+#  host: 
+#  port:
+#  user:
+#  password:
+# AUTOCONFIG:

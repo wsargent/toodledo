@@ -5,7 +5,7 @@ module Toodledo
       def initialize(client)
         super(client, 'delete', false)
         self.short_desc = "Deletes a task"
-        self.description = "This command deletes a task from Toodledo."
+        self.description = "Deletes a task from Toodledo."
       end
 
       def execute(args)
