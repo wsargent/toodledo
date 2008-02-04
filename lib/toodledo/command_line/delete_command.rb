@@ -1,15 +1,18 @@
 
 module Toodledo
   module CommandLine
-    class DeleteCommand < CmdParse::Command
-      def initialize
-        super('delete', false)
+    class DeleteCommand < BaseCommand
+      def initialize(client)
+        super(client, 'delete', false)
         self.short_desc = "Deletes a task"
         self.description = "This command deletes a task from Toodledo."
       end
 
-      def execute( args )
-
+      def execute(args)
+        Toodledo.begin do |session|            
+          line = args.join(' ')
+          client.delete_task(session, line)
+        end
       end
     end
   end

@@ -3,6 +3,9 @@ module Toodledo
   
   module CommandLine
 
+    #
+    # Methods to parse a string and identify it as a Toodledo symbol.
+    #
     module ParserHelper
   
       FOLDER_REGEXP = /\*((\w+)|\[(.*?)\])/
@@ -42,7 +45,7 @@ module Toodledo
           biggest_pos = re_end if (biggest_pos < re_end)
         end
     
-        return input[(biggest_pos+1)..input.length]
+        return input[(biggest_pos)..input.length].strip!
       end
   
       # Strips a string of [ and ] characters
