@@ -3,9 +3,9 @@ require 'rubygems'
 require 'cmdparse'
 require 'fileutils'
 require 'highline/import'
-require 'logger'
 require 'yaml'
 
+require 'toodledo'
 require 'toodledo/command_line/parser_helper'
 require 'toodledo/command_line/base_command'
 require 'toodledo/command_line/main_command'
@@ -44,27 +44,18 @@ module Toodledo
       #            
       def initialize(userconfig=CONFIG_F, opts={})
         @filters = {}
-        @logger = Logger.new(STDOUT)   
-        @logger.level = Logger::ERROR
+        @debug = false
         
         @userconfig = test(?e, userconfig) ? IO::read(userconfig) : CONFIG
         @userconfig = YAML.load(@userconfig).merge(opts)
       end
       
-      def debug?        
-        return (@logger.level == Logger::DEBUG)
+      def debug?
+        return @debug
       end
       
       def debug=(is_debug)
-        if (is_debug == true)          
-          @logger.level = Logger::DEBUG
-        else
-          @logger.level = Logger::ERROR
-        end
-      end
-            
-      def logger
-        return @logger        
+        @debug = is_debug
       end
             
       #
@@ -84,8 +75,6 @@ module Toodledo
       # will only show tasks that have this context.
       # 
       def set_context_filter(session, input)
-        session.debug = debug?
-        
         if (input == nil)
           input = ask("Selected context? > ") { |q| q.readline = true }
         end
@@ -106,8 +95,6 @@ module Toodledo
       # will only show tasks that are in this folder.
       #
       def set_folder_filter(session, input)
-        session.debug = debug?
-        
         if (input == nil)
           input = ask("Selected folder? > ") { |q| q.readline = true }
         end
@@ -127,8 +114,6 @@ module Toodledo
       # will only show tasks that have this goal.
       #
       def set_goal_filter(session, input)
-        session.debug = debug?
-                
         if (input == nil)
           input = ask("Selected goal? > ") { |q| q.readline = true }
         end
@@ -149,8 +134,6 @@ module Toodledo
       # will only show tasks that have this context.
       #
       def set_priority_filter(session, input)
-        session.debug = debug?
-        
         input = ask("Selected priority? > ") { |q| q.readline = true }  
         
         # XXX Should look for 'high' / 'medium' / 'low' and convert
@@ -184,8 +167,6 @@ module Toodledo
       # Shows all the folders for this user.
       #
       def folders(session)
-        session.debug = debug?
-        
         my_folders = session.get_folders()
         
         my_folders.sort! do |a, b|
@@ -201,8 +182,6 @@ module Toodledo
       # Shows all the contexts for this user.
       #
       def contexts(session)
-        session.debug = debug?
-        
         my_contexts = session.get_contexts()
         
         my_contexts.sort! do |a, b|
@@ -218,8 +197,6 @@ module Toodledo
       # Shows all the goals for this user.
       #
       def goals(session)
-        session.debug = debug?
-        
         my_goals = session.get_goals()
         
         my_goals.sort! do |a, b|
@@ -240,8 +217,6 @@ module Toodledo
       # but that'll come by demand.  Or patches.  Fully documented patches, mmmm.
       #
       def hotlist(session, input)
-        session.debug = debug?
-        
         # Surprisingly, we can't search for "greater than 0 priority" with the API.
         not_important = 1
         params = { :notcomp => true }
@@ -266,8 +241,6 @@ module Toodledo
       #
       # Does NO matching for toodledo symbols.
       def inbasket(session, input)
-        session.debug = debug?
-        
         title = input
         
         if (title == nil)
@@ -284,8 +257,6 @@ module Toodledo
       # Lists tasks (subject to any filters that may be present).
       #
       def list_tasks(session, input)
-        session.debug = debug?
-        
         params = { :notcomp => true }
         
         params.merge!(@filters)
@@ -331,9 +302,7 @@ module Toodledo
       #
       # There is no priority handling in this method.  It may be added if there is
       # demand for it.
-      def add_task(session, line)
-        session.debug = debug?
-        
+      def add_task(session, line)        
         context = parse_context(line)
         folder = parse_folder(line)
         goal = parse_goal(line)
@@ -369,9 +338,7 @@ module Toodledo
       # task.  Note that you must specify the ID here.  
       #
       # edit *Action 12345
-      def edit_task(session, input)
-        session.debug = debug?
-        
+      def edit_task(session, input)        
         context = parse_context(input)
         folder = parse_folder(input)
         goal = parse_goal(input)
@@ -404,9 +371,7 @@ module Toodledo
       #
       # complete 123
       #
-      def complete_task(session, line)
-        session.debug = debug?
-        
+      def complete_task(session, line)        
         task_id = line
         
         if (task_id == nil)
@@ -425,9 +390,7 @@ module Toodledo
       #
       # delete 123 
       #
-      def delete_task(session, line)
-        session.debug = debug?
-        
+      def delete_task(session, line)        
         task_id = line
         
         if (task_id == nil)

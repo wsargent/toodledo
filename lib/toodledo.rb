@@ -30,7 +30,7 @@ module Toodledo
   #     session.add_task('foo')
   #   end
   #
-  def self.begin()
+  def self.begin(logger = nil)
     config = Toodledo.get_config()
           
     proxy = config['proxy']
@@ -40,7 +40,7 @@ module Toodledo
     user_id = connection['user_id']
     password = connection['password']
     
-    session = Session.new(user_id, password)
+    session = Session.new(user_id, password, logger)
 
     base_url = Session::DEFAULT_API_URL if (base_url == nil)
     session.connect(base_url, proxy)

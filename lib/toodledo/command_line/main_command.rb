@@ -1,11 +1,11 @@
 require 'toodledo/command_line/parser_helper'
+require 'logger'
 
 module Toodledo
   
   module CommandLine
     # Runs the interactive client.
     class MainCommand < BaseCommand
-      
       
       def initialize(client)
         super(client, 'interactive', false)
@@ -14,10 +14,12 @@ module Toodledo
       end
       
       def execute(args)        
-        Toodledo.begin do |session|            
-          if (client.debug?)
-            session.debug = true            
-          end       
+        if (client.debug?)
+          logger = Logger.new(STDOUT)
+          logger.level == Logger::DEBUG
+        end
+        
+        Toodledo.begin(logger) do |session|            
           command_loop(session)
         end
       end
