@@ -23,7 +23,6 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     proxy = nil
     
     @session = Session.new(@user_id, @password)
-    @session.debug = true
     @session.connect(base_url, proxy)
   end
   
