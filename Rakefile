@@ -15,7 +15,7 @@ Hoe.new('toodledo', Toodledo::VERSION) do |p|
   p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
   p.test_globs = 'test/**/*_test.rb'
   p.rsync_args << ' --exclude=statsvn/'
-  p.extra_dep = ['cmdparse', 'highline']
+  p.extra_deps = ['cmdparse', 'highline']
 end
 
 # vim: syntax=Ruby
