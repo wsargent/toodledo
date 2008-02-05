@@ -1,6 +1,8 @@
 module Toodledo
   
-  
+  #
+  # A read only representation of a Folder.
+  #
   class Folder
     
     def initialize(id, is_private, archived, name)
@@ -28,6 +30,10 @@ module Toodledo
         
     def to_s()
       return "*[#{name}]"
+    end
+    
+    def to_xml()
+      return "<folder id=\"#{@id}\" private=\"#{@is_private}\" archived=\"#{@archived}\">#{@name}</folder>"
     end
   end
   

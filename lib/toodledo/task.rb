@@ -1,7 +1,11 @@
 module Toodledo
   
-  
+  #
+  # A read only representation of a Task.  This has some sugar in it to return
+  # relevant Context, Folder and Goal objects instead of their underlying ids.
+  #
   class Task   
+    #--
     # <task>
     #   <id>1234</id>
     #   <parent>1122</parent>
@@ -22,6 +26,7 @@ module Toodledo
     #   <timer>0</timer>
     #   <note></note>
     # </task>
+    #++
     attr_reader :parent_id, :children_ids, :title, :tag
     attr_reader :folder_id
     attr_reader :context_id

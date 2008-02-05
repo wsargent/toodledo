@@ -1,5 +1,8 @@
 module Toodledo
   
+  #
+  # A read only representation of a Goal.
+  #
   class Goal
     
     def initialize(id, level, contributes_id, name)    

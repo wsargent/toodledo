@@ -17,15 +17,16 @@ require 'toodledo/command_line/complete_command'
 require 'toodledo/command_line/delete_command'
 require 'toodledo/command_line/setup_command'
 
-
-module Toodledo
-  
+module Toodledo  
   module CommandLine
     
     #
     # The toodledo client.  This provides a command line based client to the 
     # user and gives a good overview of the capabilities of the API as well.
-    # 
+    #
+    # Author::    Will Sargent (mailto:will.sargent@gmail.com)
+    # Copyright:: Copyright (c) 2008 Will Sargent
+    # License::   GLPL v3
     class Client
       
       include Toodledo::CommandLine::ParserHelper
@@ -233,7 +234,10 @@ module Toodledo
       #
       # Displays the 'hotlist' of tasks.  This shows all the uncompleted items with
       # priority set to 3 or 2.  There's no facility in the API for this, so we have
-      # to cheat a bit.
+      # to cheat a bit.  
+      #
+      # It may be worthwhile to allow the ability to tweak what constitutes a 'hotlist'
+      # but that'll come by demand.  Or patches.  Fully documented patches, mmmm.
       #
       def hotlist(session, input)
         session.debug = debug?
@@ -256,7 +260,11 @@ module Toodledo
         end
       end
       
-      # Dumps something into the inbasket folder.  Does NO matching for toodledo symbols.
+      # Dumps something into the inbasket folder (assuming you have one.  This method
+      # actually imposes some expectations on your Folder structure, so technically
+      # it shouldn't be here.)
+      #
+      # Does NO matching for toodledo symbols.
       def inbasket(session, input)
         session.debug = debug?
         
@@ -272,6 +280,9 @@ module Toodledo
         puts "Task <#{result}> added."
       end
       
+      #
+      # Lists tasks (subject to any filters that may be present).
+      #
       def list_tasks(session, input)
         session.debug = debug?
         
@@ -430,6 +441,12 @@ module Toodledo
         end
       end
       
+      #
+      # Runs the client main command.  This is what gets run from 'toodledo'.
+      # Ironically doesn't do much except for set up the commands and parse
+      # arguments from the command line.  The MainCommand class does the 
+      # actual command loop.
+      #
       def main()                
         # Set the configuration from the YAML file.
         Toodledo.set_config(@userconfig)

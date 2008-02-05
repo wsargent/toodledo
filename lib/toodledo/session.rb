@@ -16,7 +16,7 @@ module Toodledo
     
     DEFAULT_API_URL = 'http://www.toodledo.com/api.php'
 
-    USER_AGENT = "Toodledo Ruby Client (#{VERSION})"
+    USER_AGENT = "Toodledo Ruby Client (" + Toodledo::VERSION + ")"
     
     REPEAT_MAP = {
         :none => 0,
@@ -40,10 +40,12 @@ module Toodledo
     
     EXPIRATION_TIME_IN_SECS = 60 * 60
     
+    # Return true if debugging is on, false otherwise.
     def debug?
       return (@logger.level == Logger::DEBUG)
     end
 
+    # Sets the debugging level of the session.
     def debug=(debug_flag)
       if (debug_flag == true)          
         @logger.level = Logger::DEBUG
@@ -52,10 +54,12 @@ module Toodledo
       end
     end
     
+    # The internal logger of the session.
     def logger
       return @logger
     end
     
+    # Return the URL used for the API connection.
     def get_base_url()
       return @base_url
     end
@@ -106,38 +110,6 @@ module Toodledo
       
       @key = key
       @start_time = Time.now      
-    end
-    
-    #
-    # Provides a convenient way of connecting and running a session.
-    # 
-    # This method will use the default Toodledo.config method to get
-    # the user_id and password to connect
-    #
-    # Session.begin do |session|
-    #   session.add_task('foo')
-    # end
-    #
-    def self.begin()
-      config = Toodledo.get_config()
-            
-      proxy = config['proxy']
-            
-      connection = config['connection']
-      base_url = connection['url']
-      user_id = connection['user_id']
-      password = connection['password']
-      
-      session = Session.new(user_id, password)
-
-      base_url = DEFAULT_API_URL if (base_url == nil)
-      session.connect(base_url, proxy)
-      
-      if (block_given?)
-        yield(session)
-      end
-      
-      session.disconnect()
     end
     
     # Disconnects from the server.
@@ -207,10 +179,10 @@ module Toodledo
       if (@proxy != nil)
         logger.debug("call(#{method}) establishing proxy...") if (debug?)
         
-        proxy_host = Toodledo.safe_get(proxy, :host)
-        proxy_port = Toodledo.safe_get(proxy, :port)
-        proxy_user = Toodledo.safe_get(proxy, :user)
-        proxy_password = Toodledo.safe_get(proxy, :password)
+        proxy_host = proxy['host']
+        proxy_port = proxy['port']
+        proxy_user = proxy['user']
+        proxy_password = proxy['password']
         
         if (proxy_user == nil || proxy_password == nil)
           http = Net::HTTP::Proxy(proxy_host, proxy_port).new(url.host, url.port)
@@ -286,6 +258,30 @@ module Toodledo
     # Tasks
     ############################################################################
 
+    #
+    # Gets tasks that meet the criteria given in params.  Available criteria is
+    # as follows:
+
+    # *  title:
+    # *  folder:
+    # *  context:
+    # *  goal:
+    # *  duedate:
+    # *  duetime
+    # *  repeat:
+    # *  priority:
+    # *  parent:
+    # *  shorter:    
+    # *  longer:    
+    # * before 
+    # * after 
+    # * modbefore
+    # * modafter  
+    # * compbefore 
+    # * compafter 
+    # * notcomp 
+    #
+    # Returns an array of tasks.  This information is never cached.
     def get_tasks(params={})
       logger.debug("get_tasks(#{params.inspect})") if (debug?)
       myhash = {}
@@ -401,20 +397,20 @@ module Toodledo
     # Adds a task to Toodledo.
     #
     # Required Parameters:
-    # title: a String.  This is the only required property.
+    #   title: a String.  This is the only required property.
     #
     # Optional Parameters:
-    # tag: a String
-    # folder: folder id or String matching the folder name
-    # context: context id or String matching the context name
-    # goal: goal id or String matching the Goal Name
-    # duedate: Time or String object "YYYY-MM-DD" }
-    # duetime: Time or String object "MM:SS p"}    
-    # parent: parent id }
-    # repeat: one of { :none, :weekly, :monthly :yearly :daily :biweekly, 
+    #   tag: a String
+    #   folder: folder id or String matching the folder name
+    #   context: context id or String matching the context name
+    #   goal: goal id or String matching the Goal Name
+    #   duedate: Time or String object "YYYY-MM-DD" }
+    #   duetime: Time or String object "MM:SS p"}    
+    #   parent: parent id }
+    #   repeat: one of { :none, :weekly, :monthly :yearly :daily :biweekly, 
     #         :bimonthly, :semiannually, :quarterly }
-    # length: a Number, number of minutes
-    # priority: one of { :negative, :low, :medium, :high, :top }
+    #   length: a Number, number of minutes
+    #   priority: one of { :negative, :low, :medium, :high, :top }
     #
     # Returns: the id of the added task as a String.
     def add_task(title, params={})
@@ -458,41 +454,18 @@ module Toodledo
     end
        
     # * id : The id number of the task to edit.
-    # * title : A text string up to 255 characters representing the name of the
-    #   task. Please encode the & character as %26 and the ; character as %3B.
-    # * tag : A text string up to 64 characters. Please encode the & character
-    #   as %26 and the ; character as %3B.
-    # * folder : The id number of the folder (as returned from addFolder or 
-    #    getFolders). A value of 0 will set the task to "No Folder".
-    # * context : The id number of the context (as returned from getContexts). 
-    #   A value of 0 will set the task to "No Context".
-    # * goal : The id number of the goal (as returned from getGoals). A value 
-    #   of 0 will set the task to "No Goal".
-    # * completed : A boolean value (0 or 1) that describes if this task is 
-    #   completed or not.
-    # * duedate : A date formated as YYYY-MM-DD with an optional modifier 
+    # * title : A text string up to 255 characters representing the name of the task.
+    # * folder : The id number of the folder.
+    # * context : The id number of the context.
+    # * goal : The id number of the goal. 
+    # * completed : true or false.
+    # * duedate : A date formatted as YYYY-MM-DD with an optional modifier
     #   attached to the front. Examples: "2007-01-23" , "=2007-01-23" ,
     #   ">2007-01-23". To unset the date, set it to '0000-00-00'.
-    # * duetime : A date formated as HH:MM MM. Examples: 12:34 am, 4:56 pm. To
-    #   unset the value, set it to 0.
-    # * repeat : An integer that represents how the tasks will repeat.
-    #       o 0 = No Repeat
-    #       o 1 = Weekly
-    #       o 2 = Monthly
-    #       o 3 = Yearly
-    #       o 4 = Daily
-    #       o 5 = Biweekly
-    #       o 6 = Bimonthly
-    #       o 7 = Semiannually
-    #       o 8 = Quarterly
-    # * length : An integer representing the number of minutes that the task 
-    # will take to complete.
-    # * priority : An integer that represents the priority.
-    #       o -1 = Negative
-    #       o 0 = Low
-    #       o 1 = Medium
-    #       o 2 = High
-    #       o 3 = Top
+    # * duetime : A date formated as HH:MM MM.
+    # * repeat : Use the REPEAT_MAP with the relevant symbol here.
+    # * length : An integer representing the number of minutes that the task will take to complete.
+    # * priority : Use the PRIORITY_MAP with the relevant symbol here.
     # * note : A text string.  
     def edit_task(id, params = {})
       logger.debug("edit_task(#{id}, #{params.inspect})") if (debug?)
@@ -537,6 +510,9 @@ module Toodledo
       return (result.text == '1')
     end
   
+    #
+    # Deletes the task, using the task id.
+    #
     def delete_task(id)
       logger.debug("delete_task(#{id})") if (debug?)
       raise "Nil id" if (id == nil)
@@ -550,6 +526,9 @@ module Toodledo
     # Contexts
     ############################################################################
   
+    #
+    # Returns the context with the given name.
+    #
     def get_context_by_name(context_name)
       logger.debug("get_context_by_name(#{context_name})") if (debug?)
       
@@ -561,6 +540,9 @@ module Toodledo
       return context
     end
   
+    #
+    # Returns the context with the given id.
+    #
     def get_context_by_id(context_id)
       logger.debug("get_context_by_id(#{context_id})") if (debug?)
     
@@ -571,7 +553,10 @@ module Toodledo
       context = @contexts_by_id[context_id]
       return context      
     end
-      
+    
+    #
+    # Gets the array of contexts.
+    #
     def get_contexts(flush = false)
       logger.debug("get_contexts(#{flush})") if (debug?)
       return @contexts unless (flush || @contexts == nil)
@@ -600,8 +585,9 @@ module Toodledo
       return contexts
     end
   
-    # title: takes the title (limit of 32 characters)
-    # returns the context id.
+    # 
+    # Adds the context to Toodledo, with the title.
+    #
     def add_context(title)
       logger.debug("add_context(#{title})") if (debug?)
       raise "Nil title" if (title == nil)
@@ -613,6 +599,9 @@ module Toodledo
       return result.text
     end
   
+    #
+    # Deletes the context from Toodledo, using the id.
+    #
     def delete_context(id)
       logger.debug("delete_context(#{id})") if (debug?)
       raise "Nil id" if (id == nil)
@@ -624,6 +613,9 @@ module Toodledo
       return (result.text == '1')
     end
     
+    #
+    # Deletes the cached contexts.
+    #
     def flush_contexts()
       logger.debug('flush_contexts()') if (debug?)
 
@@ -636,7 +628,9 @@ module Toodledo
     # Goals
     ############################################################################
   
-    # Downcased internally for ease of use.
+    #
+    # Returns the goal with the given name.  Case insensitive.
+    #
     def get_goal_by_name(goal_name)
       logger.debug("get_goal_by_name(#{goal_name})") if (debug?)
       if (@goals_by_name == nil)
@@ -647,6 +641,9 @@ module Toodledo
       return goal
     end
   
+    #
+    # Returns the goal with the given id.
+    #
     def get_goal_by_id(goal_id)
       logger.debug("get_goal_by_id(#{goal_id})") if (debug?)
       if (@goals_by_id == nil)
@@ -657,6 +654,9 @@ module Toodledo
       return goal
     end
   
+    #
+    # Returns the array of goals.
+    #
     def get_goals(flush = false)
       logger.debug("get_goals(#{flush})") if (debug?)
       return @goals unless (flush || @goals == nil)
@@ -695,11 +695,9 @@ module Toodledo
       return goals
     end
       
-    # title : A text string up to 255 characters.
-    # level : The integer 0, 1 or 2 specifying the level. The default is 0. 
-    #         (0=lifetime, 1=long-term, 2=short-term)
-    # contributes : The id number returned from the "getGoals" API call for the 
-    # higher level goal that this goal contributes to.
+    # 
+    # Adds a new goal with the given title, the level (short to long term) and the contributing goal id.
+    #
     def add_goal(title, level = 0, contributes = 0)
       logger.debug("add_goal(#{title}, #{level}, #{contributes})") if (debug?)
       raise "Nil title" if (title == nil)
@@ -711,6 +709,9 @@ module Toodledo
       return result.text
     end
   
+    #
+    # Delete the goal with the given id.
+    #
     def delete_goal(id)
       logger.debug("delete_goal(#{id})") if (debug?)
       raise "Nil id" if (id == nil)
@@ -722,6 +723,9 @@ module Toodledo
       return (result.text == '1')
     end
     
+    #
+    # Nils the cached goals.
+    #
     def flush_goals()
       logger.debug('flush_goals()') if (debug?)
       
@@ -735,8 +739,7 @@ module Toodledo
     ############################################################################
   
     #
-    # Gets the folder by the name.  The folder is lowercased internally for ease
-    # of use.
+    # Gets the folder by the name.  Case insensitive.
     def get_folder_by_name(folder_name)
       logger.debug("get_folders_by_name(#{folder_name})") if (debug?)
       raise "Nil folder name" if (folder_name == nil)
@@ -748,6 +751,9 @@ module Toodledo
       return @folders_by_name[folder_name.downcase]
     end
   
+    # 
+    # Gets the folder with the given id.
+    #
     def get_folder_by_id(folder_id)
       logger.debug("get_folder_by_id(#{folder_id})") if (debug?)
       raise "Nil folder_id" if (folder_id == nil)
@@ -791,10 +797,11 @@ module Toodledo
       return @folders
     end
   
+    # Adds a folder.
     # * title : A text string up to 32 characters.
-    # * private : A boolean value (0 or 1) that describes if this folder can be 
-    # shared. A value of 1 means that this folder is private.
-    # return the folder id of the new item.
+    # * private : A boolean value that describes if this folder can be shared.  
+    # 
+    # Returns the id of the newly added folder.
     def add_folder(title, is_private = 1)
       logger.debug("add_folder(#{title}, #{is_private})") if (debug?)
       raise "Nil title" if (title == nil)
@@ -814,6 +821,9 @@ module Toodledo
       return result.text
     end
     
+    #
+    # Nils out the cached folders.
+    #
     def flush_folders()      
       logger.debug("flush_folders()") if (debug?)
       
@@ -822,11 +832,14 @@ module Toodledo
       @folders_by_id = nil      
     end
     
+    # Edits a folder.
     # * id : The id number of the folder to edit.
     # * title : A text string up to 32 characters.
     # * private : A boolean value (0 or 1) that describes if this folder can be 
-    # shared. A value of 1 means that this folder is private.
+    #   shared. A value of 1 means that this folder is private.
     # * archived : A boolean value (0 or 1) that describes if this folder is archived.
+    #
+    # Returns true if the edit was successful.
     def edit_folder(id, params = {})
       logger.debug("edit_folder(#{id}, #{params.inspect})") if (debug?)
       raise "Nil id" if (id == nil)
@@ -846,7 +859,10 @@ module Toodledo
       return (result.text == '1')
     end
   
+    # Deletes the folder with the id.
     # id : The folder id.
+    #
+    # Returns true if the delete was successful. 
     def delete_folder(id)
       logger.debug("delete_folder(#{id})") if (debug?)
       raise "Nil id" if (id == nil)
@@ -862,7 +878,7 @@ module Toodledo
     # Protected methods follow
     ############################################################################
   
-    protected
+    private
   
     def handle_number(myhash, params, symbol)
       value = params[symbol]
@@ -886,7 +902,6 @@ module Toodledo
       end
     end
 
-    # Generic version
     def handle_string(myhash, params, symbol)
       value = params[symbol]
       if (value != nil)
@@ -894,7 +909,6 @@ module Toodledo
       end
     end
   
-    # Generic version
     def handle_date(myhash, params, symbol)
       value = params[symbol]
       if (value != nil)
@@ -906,7 +920,6 @@ module Toodledo
       end
     end
   
-    # Generic version
     def handle_time(myhash, params, symbol)
       value = params[symbol]
       if (value != nil)

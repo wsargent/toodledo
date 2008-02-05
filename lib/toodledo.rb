@@ -6,6 +6,10 @@ require 'toodledo/goal'
 require 'toodledo/folder'
 require 'toodledo/session'
 
+#
+# The top level Toodledo module.  This does very little that is
+# interesting.  You probably want to look at Toodledo::Session
+#
 module Toodledo
 
   # Required for gem  
@@ -26,12 +30,13 @@ module Toodledo
   #
   # Provides a convenient way of connecting and running a session.
   # 
-  # This method will use the default Toodledo.config method to get
-  # the user_id and password to connect
-  #
-  # Session.begin do |session|
-  #   session.add_task('foo')
-  # end
+  # The following will do most everything you want, assuming you've set
+  # the config correctly:
+  #   
+  #   require 'toodledo'
+  #   Toodledo.begin do |session|
+  #     session.add_task('foo')
+  #   end
   #
   def self.begin()
     config = Toodledo.get_config()

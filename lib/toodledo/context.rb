@@ -1,5 +1,8 @@
 module Toodledo
   
+  #
+  # A read only representation of a context.
+  #
   class Context
     
     def initialize(id, name)
@@ -19,6 +22,9 @@ module Toodledo
       return "@[#{name}]"
     end
     
+    def to_xml()
+      return "<context id=\"#{@id}\">#{@name}</context>"
+    end
   end
   
 end
