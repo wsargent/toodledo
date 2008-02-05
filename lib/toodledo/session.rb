@@ -46,33 +46,16 @@ module Toodledo
     
     EXPIRATION_TIME_IN_SECS = 60 * 60
     
-    # Return true if debugging is on, false otherwise.
-    def debug?
-      return (@logger.level == Logger::DEBUG)
-    end
-
-    # Sets the debugging level of the session.
-    def debug=(debug_flag)
-      if (debug_flag == true)          
-        @logger.level = Logger::DEBUG
-      else
-        @logger.level = Logger::ERROR
-      end
-    end
-    
-    # The internal logger of the session.
-    def logger
-      return @logger
-    end
-    
     # Return the URL used for the API connection.
     def get_base_url()
       return @base_url
     end
     
+    attr_accessor :logger
+
     # Creates a new session, using the given user name and password.
     # throws exception if user_id or password are nil.
-    def initialize(user_id, password)
+    def initialize(user_id, password, logger = nil)
       raise "Nil user_id" if (user_id == nil)
       raise "Nil password" if (password == nil)
     
@@ -82,15 +65,18 @@ module Toodledo
       @folders = nil
       @contexts = nil
       @goals = nil
+      @key = nil
+      @folders_by_id = nil
+      @goals_by_id = nil
+      @contexts_by_id = nil
       
-      @logger = Logger.new(STDOUT)
-      @logger.level = Logger::ERROR
+      @logger = logger
     end
     
     # Connects to the server, asking for a new key that's good for an hour.
     # Optionally takes a base URL as a parameter.  Defaults to DEFAULT_API_URL.
     def connect(base_url = DEFAULT_API_URL, proxy = nil)
-      logger.debug("connect(#{base_url}, #{proxy.inspect})") if (debug?)
+      logger.debug("connect(#{base_url}, #{proxy.inspect})") if logger
 
       # XXX It looks like get_user_id doesn't work reliably.  It always
       # returns 1 even when we pass in a valid email and password.
@@ -120,7 +106,7 @@ module Toodledo
     
     # Disconnects from the server.
     def disconnect()
-      logger.debug("disconnect()") if (debug?)
+      logger.debug("disconnect()") if logger
       @key = nil
       @start_time = nil
       @base_url = nil
@@ -172,8 +158,8 @@ module Toodledo
 
       # If it's been more than an hour, then ask for a new key.
       if (@key != nil && expired?)
-        logger.debug("call(#{method}) connection expired, reconnecting...") if (debug?)
-        
+        logger.debug("call(#{method}) connection expired, reconnecting...") if logger
+
         # Save the connection information (we'll need it)
         base_url = @base_url
         proxy = @proxy
@@ -183,7 +169,7 @@ module Toodledo
 
       # Establish the proxy
       if (@proxy != nil)
-        logger.debug("call(#{method}) establishing proxy...") if (debug?)
+        logger.debug("call(#{method}) establishing proxy...") if logger
         
         proxy_host = @proxy['host']
         proxy_port = @proxy['port']
@@ -204,7 +190,7 @@ module Toodledo
         http.use_ssl = true
       end
             
-      if (debug?) 
+      if logger
         logger.debug("call(#{method}) request: #{url.path}?#{url.query}#{url.fragment}")
       end
       start_time = Time.now
@@ -217,7 +203,7 @@ module Toodledo
       end_time = Time.now
       doc = REXML::Document.new body
 
-      if (debug?)
+      if logger
         logger.debug("call(#{method}) response: " + doc.to_s)
         logger.debug("call(#{method}) time: " + (end_time - start_time).to_s + ' seconds')
       end
@@ -289,7 +275,7 @@ module Toodledo
     #
     # Returns an array of tasks.  This information is never cached.
     def get_tasks(params={})
-      logger.debug("get_tasks(#{params.inspect})") if (debug?)
+      logger.debug("get_tasks(#{params.inspect})") if logger
       myhash = {}
     
       # * title : A text string up to 255 characters.
@@ -420,7 +406,7 @@ module Toodledo
     #
     # Returns: the id of the added task as a String.
     def add_task(title, params={})
-      logger.debug("add_task(#{title}, #{params.inspect})") if (debug?)
+      logger.debug("add_task(#{title}, #{params.inspect})") if logger
       raise "Nil id" if (title == nil)
     
       myhash = {:title => title}      
@@ -474,7 +460,7 @@ module Toodledo
     # * priority : Use the PRIORITY_MAP with the relevant symbol here.
     # * note : A text string.  
     def edit_task(id, params = {})
-      logger.debug("edit_task(#{id}, #{params.inspect})") if (debug?)
+      logger.debug("edit_task(#{id}, #{params.inspect})") if logger
       raise "Nil id" if (id == nil)
       
       myhash = { :id => id }
@@ -520,7 +506,7 @@ module Toodledo
     # Deletes the task, using the task id.
     #
     def delete_task(id)
-      logger.debug("delete_task(#{id})") if (debug?)
+      logger.debug("delete_task(#{id})") if logger
       raise "Nil id" if (id == nil)
     
       result = call('deleteTask', { :id => id }, @key)
@@ -536,7 +522,7 @@ module Toodledo
     # Returns the context with the given name.
     #
     def get_context_by_name(context_name)
-      logger.debug("get_context_by_name(#{context_name})") if (debug?)
+      logger.debug("get_context_by_name(#{context_name})") if logger
       
       if (@contexts_by_name == nil)
         get_contexts(true)  
@@ -550,7 +536,7 @@ module Toodledo
     # Returns the context with the given id.
     #
     def get_context_by_id(context_id)
-      logger.debug("get_context_by_id(#{context_id})") if (debug?)
+      logger.debug("get_context_by_id(#{context_id})") if logger
     
       if (@contexts_by_id == nil)
         get_contexts(true)  
@@ -564,7 +550,7 @@ module Toodledo
     # Gets the array of contexts.
     #
     def get_contexts(flush = false)
-      logger.debug("get_contexts(#{flush})") if (debug?)
+      logger.debug("get_contexts(#{flush})") if logger
       return @contexts unless (flush || @contexts == nil)
       
       result = call('getContexts', {}, @key)
@@ -595,7 +581,7 @@ module Toodledo
     # Adds the context to Toodledo, with the title.
     #
     def add_context(title)
-      logger.debug("add_context(#{title})") if (debug?)
+      logger.debug("add_context(#{title})") if logger
       raise "Nil title" if (title == nil)
       
       result = call('addContext', { :title => title }, @key)
@@ -609,7 +595,7 @@ module Toodledo
     # Deletes the context from Toodledo, using the id.
     #
     def delete_context(id)
-      logger.debug("delete_context(#{id})") if (debug?)
+      logger.debug("delete_context(#{id})") if logger
       raise "Nil id" if (id == nil)
       
       result = call('deleteContext', { :id => id }, @key)
@@ -623,7 +609,7 @@ module Toodledo
     # Deletes the cached contexts.
     #
     def flush_contexts()
-      logger.debug('flush_contexts()') if (debug?)
+      logger.debug('flush_contexts()') if logger
 
       @contexts_by_id = nil
       @contexts_by_name = nil
@@ -638,7 +624,7 @@ module Toodledo
     # Returns the goal with the given name.  Case insensitive.
     #
     def get_goal_by_name(goal_name)
-      logger.debug("get_goal_by_name(#{goal_name})") if (debug?)
+      logger.debug("get_goal_by_name(#{goal_name})") if logger
       if (@goals_by_name == nil)
         get_goals(true)
       end
@@ -651,7 +637,7 @@ module Toodledo
     # Returns the goal with the given id.
     #
     def get_goal_by_id(goal_id)
-      logger.debug("get_goal_by_id(#{goal_id})") if (debug?)
+      logger.debug("get_goal_by_id(#{goal_id})") if logger
       if (@goals_by_id == nil)
         get_goals(true)
       end
@@ -664,7 +650,7 @@ module Toodledo
     # Returns the array of goals.
     #
     def get_goals(flush = false)
-      logger.debug("get_goals(#{flush})") if (debug?)
+      logger.debug("get_goals(#{flush})") if logger
       return @goals unless (flush || @goals == nil)
      
       result = call('getGoals', {}, @key)
@@ -705,7 +691,7 @@ module Toodledo
     # Adds a new goal with the given title, the level (short to long term) and the contributing goal id.
     #
     def add_goal(title, level = 0, contributes = 0)
-      logger.debug("add_goal(#{title}, #{level}, #{contributes})") if (debug?)
+      logger.debug("add_goal(#{title}, #{level}, #{contributes})") if logger
       raise "Nil title" if (title == nil)
 
       result = call('addGoal', { :title => title, :level => level, :contributes => contributes }, @key)
@@ -719,7 +705,7 @@ module Toodledo
     # Delete the goal with the given id.
     #
     def delete_goal(id)
-      logger.debug("delete_goal(#{id})") if (debug?)
+      logger.debug("delete_goal(#{id})") if logger
       raise "Nil id" if (id == nil)
       
       result = call('deleteGoal', { :id => id }, @key)
@@ -733,7 +719,7 @@ module Toodledo
     # Nils the cached goals.
     #
     def flush_goals()
-      logger.debug('flush_goals()') if (debug?)
+      logger.debug('flush_goals()') if logger
       
       @goals = nil
       @goals_by_name = nil
@@ -747,7 +733,7 @@ module Toodledo
     #
     # Gets the folder by the name.  Case insensitive.
     def get_folder_by_name(folder_name)
-      logger.debug("get_folders_by_name(#{folder_name})") if (debug?)
+      logger.debug("get_folders_by_name(#{folder_name})") if logger
       raise "Nil folder name" if (folder_name == nil)
       
       if (@folders_by_name == nil)
@@ -761,7 +747,7 @@ module Toodledo
     # Gets the folder with the given id.
     #
     def get_folder_by_id(folder_id)
-      logger.debug("get_folder_by_id(#{folder_id})") if (debug?)
+      logger.debug("get_folder_by_id(#{folder_id})") if logger
       raise "Nil folder_id" if (folder_id == nil)
       
       if (@folders_by_id == nil)
@@ -773,7 +759,7 @@ module Toodledo
   
     # Gets all the folders.
     def get_folders(flush = false)
-      logger.debug("get_folders(#{flush})") if (debug?)
+      logger.debug("get_folders(#{flush})") if logger
       return @folders unless (flush || @folders == nil)
     
       result = call('getFolders', {}, @key)      
@@ -809,7 +795,7 @@ module Toodledo
     # 
     # Returns the id of the newly added folder.
     def add_folder(title, is_private = 1)
-      logger.debug("add_folder(#{title}, #{is_private})") if (debug?)
+      logger.debug("add_folder(#{title}, #{is_private})") if logger
       raise "Nil title" if (title == nil)
       
       if (is_private.kind_of? TrueClass)
@@ -831,7 +817,7 @@ module Toodledo
     # Nils out the cached folders.
     #
     def flush_folders()      
-      logger.debug("flush_folders()") if (debug?)
+      logger.debug("flush_folders()") if logger
       
       @folders = nil
       @folders_by_name = nil
@@ -847,7 +833,7 @@ module Toodledo
     #
     # Returns true if the edit was successful.
     def edit_folder(id, params = {})
-      logger.debug("edit_folder(#{id}, #{params.inspect})") if (debug?)
+      logger.debug("edit_folder(#{id}, #{params.inspect})") if logger
       raise "Nil id" if (id == nil)
       
       myhash = { :id => id }
@@ -870,7 +856,7 @@ module Toodledo
     #
     # Returns true if the delete was successful. 
     def delete_folder(id)
-      logger.debug("delete_folder(#{id})") if (debug?)
+      logger.debug("delete_folder(#{id})") if logger
       raise "Nil id" if (id == nil)
       
       result = call('deleteFolder', { :id => id }, @key)
@@ -957,6 +943,7 @@ module Toodledo
       end 
     end
 
+    # XXX Handle when folder is an ID or Folder object.
     def handle_folder(myhash, params)      
       folder = params[:folder]
       if (folder != nil)        
@@ -968,6 +955,7 @@ module Toodledo
       end 
     end
 
+    # XXX handle when context is an ID or context object.
     def handle_context(myhash, params)
       context = params[:context]
       if (context != nil)
@@ -981,6 +969,7 @@ module Toodledo
       end      
     end
 
+    # XXX handle when goal is an ID or goal object.
     def handle_goal(myhash, params)
       goal = params[:goal]
       if (goal != nil)
