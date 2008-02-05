@@ -1,3 +1,5 @@
+require 'toodledo'
+
 require 'digest/md5'
 require 'uri'
 require 'net/http'
@@ -16,7 +18,11 @@ module Toodledo
     
     DEFAULT_API_URL = 'http://www.toodledo.com/api.php'
 
-    USER_AGENT = "Toodledo Ruby Client (" + Toodledo::VERSION + ")"
+    USER_AGENT = "Ruby/#{Toodledo::VERSION} (#{RUBY_PLATFORM})"
+    
+    HEADERS = {
+      'User-Agent' => USER_AGENT
+    }
     
     REPEAT_MAP = {
         :none => 0,
@@ -179,10 +185,10 @@ module Toodledo
       if (@proxy != nil)
         logger.debug("call(#{method}) establishing proxy...") if (debug?)
         
-        proxy_host = proxy['host']
-        proxy_port = proxy['port']
-        proxy_user = proxy['user']
-        proxy_password = proxy['password']
+        proxy_host = @proxy['host']
+        proxy_port = @proxy['port']
+        proxy_user = @proxy['user']
+        proxy_password = @proxy['password']
         
         if (proxy_user == nil || proxy_password == nil)
           http = Net::HTTP::Proxy(proxy_host, proxy_port).new(url.host, url.port)
@@ -197,14 +203,14 @@ module Toodledo
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
         http.use_ssl = true
       end
-      
+            
       if (debug?) 
         logger.debug("call(#{method}) request: #{url.path}?#{url.query}#{url.fragment}")
       end
       start_time = Time.now
       
       # make the call
-      response = http.request_get(url.request_uri)
+      response = http.request_get(url.request_uri, HEADERS)
       body = response.body
 
       # body = url.read

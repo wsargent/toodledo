@@ -19,9 +19,12 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     @user_id = 'td479be708d8bd7'
     @password = 'toodledo'
     
+    # proxy = { 'host' => '127.0.0.1', 'port' => '8080'}
+    proxy = nil
+    
     @session = Session.new(@user_id, @password)
     @session.debug = true
-    @session.connect(base_url)
+    @session.connect(base_url, proxy)
   end
   
   def teardown

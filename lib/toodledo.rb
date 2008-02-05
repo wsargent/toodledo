@@ -1,11 +1,3 @@
-require 'toodledo/server_error'
-require 'toodledo/item_not_found_error'
-require 'toodledo/task'
-require 'toodledo/context'
-require 'toodledo/goal'
-require 'toodledo/folder'
-require 'toodledo/session'
-
 #
 # The top level Toodledo module.  This does very little that is
 # interesting.  You probably want to look at Toodledo::Session
@@ -58,6 +50,13 @@ module Toodledo
     end
     
     session.disconnect()
-  end
-  
+  end  
 end
+
+require 'toodledo/server_error'
+require 'toodledo/item_not_found_error'
+require 'toodledo/task'
+require 'toodledo/context'
+require 'toodledo/goal'
+require 'toodledo/folder'
+require 'toodledo/session'
