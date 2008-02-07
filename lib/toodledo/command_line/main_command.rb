@@ -28,10 +28,10 @@ module Toodledo
       # Displays the help message.
       #
       def help()
-        puts "hotlist -- shows the hotlist (important and top priorities)\n"
+        puts "hotlist -- shows the hotlist\n"
         puts "tasks -- shows tasks ('tasks $[World Peace] *MyFolder' -- filters also apply)"
+        puts "list -- does the same as tasks"
         puts 
-        puts "in -- adds a task to *Inbasket, ignoring other symbols"
         puts "add -- adds a task ('add *Action @Home Eat breakfast')"
         puts "edit -- edits a task ('edit *Action 1134' will move 1134 to Action folder)"
         puts "complete -- completes a task ('complete 1234')\n"
@@ -67,10 +67,6 @@ module Toodledo
             case input
               when /^help/, /^\s*\?/
               help()
-              
-              when /^in/
-              line = clean(/^priority/, input)
-              client.inbasket(session, line)
               
               when /^add/
               line = clean(/^add/, input)

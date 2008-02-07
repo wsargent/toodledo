@@ -148,6 +148,10 @@ module Toodledo
       raise 'Wrong type of params' if (! params.kind_of? Hash)
       raise 'Wrong method type' if (! method.kind_of? String)
 
+      if (@base_url == nil)
+        raise 'Must call connect() before this method'        
+      end
+
       # Break all the parameters down into key=value seperated by semi colons
       stringified_params = (key != nil) ? ';key=' + key : ''
 
@@ -870,8 +874,6 @@ module Toodledo
     # Protected methods follow
     ############################################################################
   
-    private
-  
     def handle_number(myhash, params, symbol)
       value = params[symbol]
       if (value != nil)
@@ -969,18 +971,26 @@ module Toodledo
       end      
     end
 
-    # XXX handle when goal is an ID or goal object.
     def handle_goal(myhash, params)
-      goal = params[:goal]
-      if (goal != nil)
-        if (goal.kind_of? String)
-          goal_obj = get_goal_by_name(goal)
-          if (goal_obj == nil)
-            raise Toodledo::ItemNotFoundError.new("No goal found with name '#{goal}'")
-          end
-          myhash.merge!({ :goal => goal_obj.server_id })
-        end
+      goal_id = params[:goal]
+      if (goal_id == nil)
+        return
       end
+
+      if (goal_id.kind_of? String)
+        goal_obj = get_goal_by_name(goal_id)
+        if (goal_obj == nil)
+          raise Toodledo::ItemNotFoundError.new("No goal found with name '#{goal}'")
+        end
+        goal_id = goal_obj.server_id
+      end
+      
+      if (goal_id.kind_of? Goal)
+        goal_id = goal_id.server_id
+      end
+      
+      # Otherwise, assume it's a number.
+      myhash.merge!({ :goal => goal_id })
     end
   
     # XXX add special logic to handle duedate modifiers

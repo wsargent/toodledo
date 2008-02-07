@@ -234,25 +234,7 @@ module Toodledo
           end
         end
       end
-      
-      # Dumps something into the inbasket folder (assuming you have one.  This method
-      # actually imposes some expectations on your Folder structure, so technically
-      # it shouldn't be here.)
-      #
-      # Does NO matching for toodledo symbols.
-      def inbasket(session, input)
-        title = input
-        
-        if (title == nil)
-          title = ask("Task name: ") { |q| q.readline = true }
-        end
-        
-        params = { :folder => "Inbasket", :priority => "medium" }
-        result = session.add_task(title, params)
-        
-        puts "Task <#{result}> added."
-      end
-      
+            
       #
       # Lists tasks (subject to any filters that may be present).
       #

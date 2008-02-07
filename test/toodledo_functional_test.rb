@@ -61,6 +61,9 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     assert tasks.length == 0
   end
   
+  #
+  # basic context functionality.
+  #
   def test_add_and_remove_context
     title = 'test_context'    
     context_id = @session.add_context(title)
@@ -80,6 +83,9 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     assert contexts.length == 0
   end
   
+  #
+  # basic goal functionality.
+  #
   def test_add_and_remove_goal
     title = 'test_goal'
     goal_id = @session.add_goal(title)
@@ -99,6 +105,9 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     assert goals.length == 0
   end
   
+  #
+  # Basic folder functionality.
+  #
   def test_add_edit_and_remove_folder  
     
     title = 'test_folder'
@@ -121,5 +130,37 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     folders = @session.get_folders()
     assert folders.length == 0
   end
+  
+  #
+  # Date functionality.
+  #
+  
+  #
+  # Priority functionality
+  #
+  
+  #
+  # Repeat functionality
+  #
+  
+  #
+  # Parent functionality
+  #
+  
+  #
+  # Length / Duration functionality.
+  #
+  
+  #
+  # Completed Before / After functionality
+  #
+  
+  #
+  # Modified Before / After functionality
+  #
+  
+  #
+  # Tag functionality
+  #
   
 end
