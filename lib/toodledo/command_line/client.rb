@@ -70,6 +70,20 @@ module Toodledo
         edit = (ENV["EDITOR"] || ENV["EDIT"] || "vi") + " '#{CONFIG_F}'"
         system edit or puts "edit '#{CONFIG_F}'"
       end
+      
+      #
+      # Displays the configuration information that the session is
+      # currently using.
+      #
+      def show_config(session)
+        base_url = session.base_url
+        user_id = session.user_id
+        proxy = session.proxy
+        
+        puts "base_url = #{base_url}"    
+        puts "user_id = #{user_id}"
+        puts "proxy = #{proxy.inspect}"
+      end
 
       # Sets the context filter.  Subsequent calls to show tasks
       # will only show tasks that have this context.
@@ -78,6 +92,9 @@ module Toodledo
         if (input == nil)
           input = ask("Selected context? > ") { |q| q.readline = true }
         end
+        
+        input.strip!
+        
         if (input =~ /^(\d+)$/)
           context = session.get_context_by_id(input)
           if (context != nil)
@@ -98,6 +115,9 @@ module Toodledo
         if (input == nil)
           input = ask("Selected folder? > ") { |q| q.readline = true }
         end
+        
+        input.strip!
+        
         if (input =~ /^(\d+)$/)
           folder = session.get_folder_by_id(input)
           if (folder != nil)
@@ -117,6 +137,8 @@ module Toodledo
         if (input == nil)
           input = ask("Selected goal? > ") { |q| q.readline = true }
         end
+      
+        input.strip!
         
         if (input =~ /^(\d+)$/)
           goal = session.get_goal_by_id(input)

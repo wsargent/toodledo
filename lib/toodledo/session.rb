@@ -46,12 +46,9 @@ module Toodledo
     
     EXPIRATION_TIME_IN_SECS = 60 * 60
     
-    # Return the URL used for the API connection.
-    def get_base_url()
-      return @base_url
-    end
-    
-    attr_accessor :logger
+    attr_accessor :logger 
+      
+    attr_reader :base_url, :user_id, :proxy
 
     # Creates a new session, using the given user name and password.
     # throws exception if user_id or password are nil.
@@ -124,8 +121,8 @@ module Toodledo
     end
 
     # Returns a parsable URI object from the base API URL and the parameters.
-    def get_url(method, params)
-      url_string = URI.escape(get_base_url() + '?method=' + method + params)
+    def make_uri(method, params)
+      url_string = URI.escape(@base_url + '?method=' + method + params)
       return URI.parse(url_string)
     end
 
@@ -158,7 +155,7 @@ module Toodledo
       params.each { |k, v| 
         stringified_params += ';' + k.to_s + '=' + escape_text(v) 
       }
-      url = get_url(method, stringified_params)
+      url = make_uri(method, stringified_params)
 
       # If it's been more than an hour, then ask for a new key.
       if (@key != nil && expired?)
@@ -356,33 +353,63 @@ module Toodledo
         id = el.elements['id'].text
         folder_id = el.elements['folder'].text
         folder = get_folder_by_id(folder_id);
-      
+        if (folder == nil)
+          folder = Folder::NO_FOLDER
+        end
+        
         goal_id = el.elements['goal'].attributes['id']
         goal = get_goal_by_id(goal_id)
-
+        if (goal == nil)
+          goal = Goal::NO_GOAL
+        end
+        
         context_id = el.elements['context'].attributes['id']
-        context = get_context_by_id(context_id)
-      
+        context = get_context_by_id(context_id)      
+        if (context == nil)
+          context = Context::NO_CONTEXT
+        end
+        
+        # XXX Add duedate logic
+        duedate = el.elements['duedate'].text
+        duedatemodifier = nil
+        
+        # XXX Add date logic
+        added = el.elements['added'].text
+        modified = el.elements['modified'].text
+        completed = el.elements['completed'].text
+        
+        repeat = el.elements['repeat'].text
+        
+        priority = el.elements['priority'].text
+        
+        # Add parent / children logic
+        parent = el.elements['parent'].text
+        children = el.elements['children'].text
+        
+        title = el.elements['title'].text
+        tag = el.elements['tag'].text
+        length = el.elements['length'].text
+        timer = el.elements['timer'].text
+        note = el.elements['note'].text
+        
         params = {
-           :parent => el.elements['id'].text,
-           :children => el.elements['children'].text,
-           :title => el.elements['title'].text,
-           :tag => el.elements['tag'].text,
-           :folder_id => folder_id,
+           :parent => parent,
+           :children => children,
+           :title => title,
+           :tag => tag,
            :folder => folder,
-           :context_id => context_id,
            :context => context,
-           :goal_id => goal_id,
            :goal => goal,
-           :added => el.elements['added'].text,
-           :modified => el.elements['modified'].text,
-           :duedate => el.elements['duedate'].text,
-           :completed => el.elements['completed'].text,
-           :repeat => el.elements['repeat'].text,
-           :priority => el.elements['priority'].text,
-           :length => el.elements['length'].text,
-           :timer => el.elements['timer'].text,
-           :note => el.elements['note'].text,
+           :added => added,
+           :modified => modified,
+           :duedate => duedate,
+           :duedatemodifier => duedatemodifier,
+           :completed => completed,
+           :repeat => repeat,
+           :priority => priority,
+           :length => length,
+           :timer => timer,
+           :note => note,
         }
         task = Task.new(id, params)
         tasks << task
@@ -885,15 +912,22 @@ module Toodledo
   
     def handle_boolean(myhash, params, symbol)
       value = params[symbol]
-      if (value != nil)
-        if (value.kind_of? TrueClass)
-          myhash.merge!({ symbol => value.to_s})          
-        elsif (value.kind_of? FalseClass)
-          myhash.merge!({ symbol => value.to_s})
-        else
-          myhash.merge!({ symbol => value })
-        end
+      if (value == nil)
+        return
       end
+      
+      case value
+      when TrueClass, FalseClass
+        bool = (value == true) ? '1' : '0'           
+      when String
+        bool = ('true' == value.downcase) ? '1' : '0' 
+      when FixNum
+        bool = (value == 1) ? '1' : '0'
+      else
+        bool = value
+      end
+      
+      myhash.merge!({ symbol => bool }) 
     end
 
     def handle_string(myhash, params, symbol)
@@ -937,56 +971,92 @@ module Toodledo
       end
     end
   
-    #
+    # Handles the parent task object.  Only takes a task object or id.
     def handle_parent(myhash, params)
       parent = params[:parent]
-      if (parent != nil)        
-        myhash.merge!({ :parent => parent })
-      end 
+      if (parent == nil)        
+        return
+      end
+      
+      parent_id = nil
+      case parent
+      when Task
+        parent_id = parent.server_id
+      else
+        parent_id = parent
+      end
+      
+      myhash.merge!({ :parent => parent_id })
     end
 
-    # XXX Handle when folder is an ID or Folder object.
+    # Handles a folder (in the form of a folder name, object or id) and puts
+    # the folder_id in  myhash.
     def handle_folder(myhash, params)      
       folder = params[:folder]
-      if (folder != nil)        
-        if (folder.kind_of? String)
-          folder_obj = get_folder_by_name(folder)
-          raise Toodledo::ItemNotFoundError.new("No folder found with name #{folder}") if (folder_obj == nil)  
-          myhash.merge!({ :folder => folder_obj.server_id })
+      if (folder == nil) 
+        return
+      end
+      
+      folder_id = nil
+      case folder
+      when String
+        folder_obj = get_folder_by_name(folder)
+        if (folder_obj == nil)
+          raise Toodledo::ItemNotFoundError.new("No folder found with name #{folder}")   
         end
-      end 
+        folder_id = folder_obj.server_id
+      when Folder
+        folder_id = folder.server_id
+      else
+        folder_id = folder
+      end
+      
+      myhash.merge!({ :folder => folder_id })          
     end
 
-    # XXX handle when context is an ID or context object.
+    # Takes in a context (in the form of a string, a Context object or 
+    # a context id) and adds it to myhash as a context_id.
     def handle_context(myhash, params)
       context = params[:context]
-      if (context != nil)
-        if (context.kind_of? String)
-          context_obj = get_context_by_name(context)
-          if (context_obj == nil)
-            raise Toodledo::ItemNotFoundError.new("No context found with name '#{context}'")
-          end
-          myhash.merge!({ :context => context_obj.server_id })
-        end
+      if (context == nil)
+        return 
       end      
+      
+      case context
+      when String
+        context_obj = get_context_by_name(context)
+        if (context_obj == nil)
+          raise Toodledo::ItemNotFoundError.new("No context found with name '#{context}'")
+        end
+        context_id = context_obj.server_id
+      when Context
+        context_id = context.server_id
+      else
+        context_id = context
+      end
+      
+      myhash.merge!({ :context => context_id })
     end
 
+    # Takes a goal (as a goal title, a goal object or a goal id) and sets it
+    # in myhash.
     def handle_goal(myhash, params)
-      goal_id = params[:goal]
-      if (goal_id == nil)
+      goal = params[:goal]
+      if (goal == nil)
         return
       end
 
-      if (goal_id.kind_of? String)
-        goal_obj = get_goal_by_name(goal_id)
+      case goal
+      when String
+        goal_obj = get_goal_by_name(goal)
         if (goal_obj == nil)
           raise Toodledo::ItemNotFoundError.new("No goal found with name '#{goal}'")
         end
         goal_id = goal_obj.server_id
-      end
-      
-      if (goal_id.kind_of? Goal)
-        goal_id = goal_id.server_id
+      when Goal
+        goal_id = goal.server_id
+      else
+        goal_id = goal
       end
       
       # Otherwise, assume it's a number.

@@ -47,6 +47,8 @@ module Toodledo
         puts "goals -- shows all goals"
         puts "contexts -- shows all contexts"
         puts
+        puts "config -- displays the current configuration"
+        puts
         puts "help or ? -- displays this help message\n"
         puts "quit or exit -- Leaves the application"
       end
@@ -117,6 +119,9 @@ module Toodledo
               when /^priority/
               line = clean(/^priority/, input)
               client.set_priority_filter(session, line)
+              
+              when /^config/
+              client.show_config(session)
               
               when /^filters/
               client.list_filters()

@@ -28,11 +28,8 @@ module Toodledo
     # </task>
     #++
     attr_reader :parent_id, :children_ids, :title, :tag
-    attr_reader :folder_id
-    attr_reader :context_id
-    attr_reader :goal_id
-    attr_reader :added, :modified
-    attr_reader :duedate, :duetime
+    attr_reader :added, :modified, :completed
+    attr_reader :duedate, :duetime, :duedatemodifier
     attr_reader :repeat, :priority, :length, :timer, :note
     
     def server_id
@@ -40,55 +37,55 @@ module Toodledo
     end
       
     def context
-      if (@context == nil)
-        return Context::NO_CONTEXT
-      end
       return @context
     end
     
-    def folder
-      if (@folder == nil)
-        return Folder::NO_FOLDER
-      end
+    def folder      
       return @folder
     end
     
     def goal
-      if (@goal == nil)
-        return Goal::NO_GOAL
-      end
       return @goal
-    end 
+    end
       
     def initialize(id, params = {})
       @id = id
 
       @title = params[:title]
-      @parent_id = params[:parent]
-      @children_ids = params[:children]
-      @folder_id = params[:folder_id]
-      @folder = params[:folder]
-      @context_id = params[:context_id]
-      @context = params[:context]
-      @goal_id = params[:goal_id]      
-      @goal = params[:goal]
       
-      # XXX handle date
+      @parent_id = params[:parent].to_i
+      
+      # Handle the children.
+      # XXX parse out multiple children.
+      @children_ids = params[:children]
+      
+      # The folder, context and goals are parsed out from 
+      # get_tasks() call into the appropriate object.
+      @folder = params[:folder]
+      @context = params[:context]      
+      @goal = params[:goal]
+
       @added = params[:added]
       @modified = params[:modified]
-      @duedate = params[:duedate]      
+
+      @duedate = params[:duedate]
+      @duedatemodifier = params[:duedatemodifier]      
       @duetime = params[:duetime]
       
-      # XXX completed is a date
       @completed = params[:completed]
       @repeat = params[:repeat]
-      # priority should be a fix_num
+      
       @priority = params[:priority].to_i
+      
       @length = params[:length]
       @timer = params[:timer]
       @note = params[:note]
-
-      # Map from the provided parameters 
+    end
+    
+    def parse_duedate(date)
+      
+      
+      
     end
     
     def completed?
@@ -112,26 +109,26 @@ module Toodledo
 
     def to_xml()
       return <<-HERE
-       <task>
-          <id>#{@id}</id>
-         	<parent>#{@parent_id}</parent>
-       		<children>#{@children_ids}</children>
-       		<title>#{@title}</title>
-       		<tag>#{@tag}</tag>
-       		<folder>#{@folder_id}</folder>
-       		<context id="#{@context_id}">#{@context}</context>
-       		<goal id="#{@goal_id}">#{@goal}</goal>
-       		<added>#{@added}</added>
-       		<modified>#{@modified}</modified>
-       		<duedate modifier="">#{@duedate}</duedate>
-       		<duetime>#{@duetime}</duetime>
-       		<completed>#{@completed}</completed>
-       		<repeat>#{@repeat}</repeat>
-       		<priority>#{@priority}</priority>
-       		<length>#{@length}</length>
-       		<timer>#{@timer}</timer>
-       		<note>#{@note}</note>
-       </task>
+<task>
+  <id>#{@id}</id>
+  <parent>#{@parent_id}</parent>
+  <children>#{@children_ids}</children>
+  <title>#{@title}</title>
+  <tag>#{@tag}</tag>
+  <folder>#{@folder.server_id}</folder>
+  <context id="#{@context.server_id}">#{@context.name}</context>
+  <goal id="#{@goal.server_id}">#{@goal.name}</goal>
+  <added>#{@added}</added>
+  <modified>#{@modified}</modified>
+  <duedate modifier="">#{@duedate}</duedate>
+  <duetime>#{@duetime}</duetime>
+  <completed>#{@completed}</completed>
+  <repeat>#{@repeat}</repeat>
+  <priority>#{@priority}</priority>
+  <length>#{@length}</length>
+  <timer>#{@timer}</timer>
+  <note>#{@note}</note>
+</task>
       HERE
     end
     
