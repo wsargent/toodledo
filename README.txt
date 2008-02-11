@@ -1,6 +1,5 @@
 toodledo
-    by Will Sargent
-    http://toodledo.rubyforge.org
+http://toodledo.rubyforge.org
 
 == DESCRIPTION:
 
@@ -21,8 +20,6 @@ your own.
 * Interactive client interface
 * Fully featured session based API
 * Supports Proxy and SSL usage
-* PROBLEM: Priority support is weak
-* PROBLEM: Due Date support is weak
 
 == SYNOPSIS:
  
