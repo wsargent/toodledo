@@ -6,7 +6,7 @@ module Toodledo
       def initialize(client, name, subtasks = false)
         super(name, subtasks)
         raise "Nil client!" if (client == nil)
-        @client = client
+        @client = client        
       end
       
       def client
@@ -14,7 +14,7 @@ module Toodledo
       end
       
       def logger
-        return @client.logger
+        return @logger
       end
       
     end

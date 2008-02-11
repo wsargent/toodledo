@@ -7,8 +7,13 @@ module Toodledo
         self.description = "Completes a task in Toodledo."
       end
       
-      def execute( args )
-        Toodledo.begin do |session|            
+      def execute(args)
+        if (client.debug?)
+          logger = Logger.new(STDOUT)
+          logger.level = Logger::DEBUG
+        end
+        
+        Toodledo.begin(logger) do |session|            
           line = args.join(' ')
           client.complete_task(session, line)
         end

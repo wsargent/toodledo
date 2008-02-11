@@ -32,6 +32,15 @@ module Toodledo
       return "*[#{name}]"
     end
     
+    def self.parse(session, el)
+      id = el.attributes['id']
+      is_private = el.attributes['private']
+      archived = el.attributes['archived']
+      name = el.text
+      folder = Folder.new(id, is_private, archived, name)
+      return folder
+    end
+    
     def to_xml()
       return "<folder id=\"#{@id}\" private=\"#{@is_private}\" archived=\"#{@archived}\">#{@name}</folder>"
     end

@@ -24,7 +24,7 @@ module Toodledo
     # The toodledo client.  This provides a command line based client to the 
     # user and gives a good overview of the capabilities of the API as well.
     #
-    # Author::    Will Sargent (mailto:will.sargent@gmail.com)
+    # Author::    Will Sargent (mailto:will@tersesystems.com)
     # Copyright:: Copyright (c) 2008 Will Sargent
     # License::   GLPL v3
     class Client
@@ -239,9 +239,27 @@ module Toodledo
       # but that'll come by demand.  Or patches.  Fully documented patches, mmmm.
       #
       def hotlist(session, input)
-        # Surprisingly, we can't search for "greater than 0 priority" with the API.
-        not_important = 1
+        
+        # See if there's input following the command.
+        context = parse_context(input)
+        folder = parse_folder(input)
+        goal = parse_goal(input)
+        
         params = { :notcomp => true }
+        
+        # If there are, they override what we have set.
+        if (folder != nil)
+          params.merge!({ :folder => folder })
+        end
+        
+        if (context != nil)
+          params.merge!({ :context => context })
+        end
+        
+        if (goal != nil)
+          params.merge!({ :goal => goal })
+        end
+        
         tasks = session.get_tasks(params)
         
         # Highest priority first
@@ -250,6 +268,9 @@ module Toodledo
         end
         
         # filter on our end.
+        # Surprisingly, we can't search for "greater than 0 priority" with the API.
+        not_important = Priority::MEDIUM
+        
         for task in tasks
           if (task.priority > not_important)
             puts "<#{task.server_id}> -- #{task}\n"
@@ -312,8 +333,7 @@ module Toodledo
         goal = parse_goal(line)
         title = parse_remainder(line)
         
-        # XXX priority handling is kinda neglected right now...
-        params = { :priority => "medium" }
+        params = { :priority => Priority::LOW }
         
         if (folder != nil)
           params.merge!({ :folder => folder })
@@ -431,8 +451,7 @@ module Toodledo
           opt.on("--debug", "Print debugging information") {|t| self.debug = true }
         end
         
-        # this is the default command if we don't receive any options.
-        cmd.add_command(MainCommand.new(self), true)
+        cmd.add_command(MainCommand.new(self))
         
         cmd.add_command(AddCommand.new(self))
         cmd.add_command(ListCommand.new(self))
@@ -442,7 +461,8 @@ module Toodledo
         cmd.add_command(HotlistCommand.new(self))
         cmd.add_command(SetupCommand.new(self))
         
-        cmd.add_command(CmdParse::HelpCommand.new)
+        # this is the default command if we don't receive any options.
+        cmd.add_command(CmdParse::HelpCommand.new, true)
         cmd.add_command(CmdParse::VersionCommand.new)
         
         cmd.parse

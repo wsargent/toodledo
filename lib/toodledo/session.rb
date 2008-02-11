@@ -24,27 +24,13 @@ module Toodledo
       'User-Agent' => USER_AGENT
     }
     
-    REPEAT_MAP = {
-        :none => 0,
-        :weekly => 1,
-        :monthly => 2,
-        :yearly => 3,
-        :daily => 4,
-        :biweekly => 5,
-        :bimonthly => 6,
-        :semiannually => 7,
-        :quarterly => 8        
-    }
-
-    PRIORITY_MAP = {
-      :negative => -1,
-      :low => 0,
-      :medium => 1,
-      :high => 2,
-      :top => 3    
-    }
-    
     EXPIRATION_TIME_IN_SECS = 60 * 60
+    
+    DATE_FORMAT = '%Y-%m-%d'
+    
+    DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+    
+    TIME_FORMAT = '%I:%M %p'
     
     attr_accessor :logger 
       
@@ -70,6 +56,11 @@ module Toodledo
       @logger = logger
     end
     
+    #  Hashes the input string and returns a string hex digest.
+    def md5(input_string)
+      return Digest::MD5.hexdigest(input_string)
+    end
+  
     # Connects to the server, asking for a new key that's good for an hour.
     # Optionally takes a base URL as a parameter.  Defaults to DEFAULT_API_URL.
     def connect(base_url = DEFAULT_API_URL, proxy = nil)
@@ -293,15 +284,17 @@ module Toodledo
       handle_goal(myhash, params)
     
       # duedate handling.  Take either a string or a Time object.'YYYY-MM-DD'
-      handle_duedate(myhash, params)
+      # This does not need special handling, because if it's not a time object
+      # then we don't pass through anything at all.
+      handle_date(myhash, params, :duedate)
     
       # duetime handling.  Take either a string or a Time object. 
       handle_time(myhash, params, :duetime)
     
-      # repeat: use the map to change from the symbol to the raw numeric value.
+      # repeat: takes in an integer in the proper range..
       handle_repeat(myhash, params)
    
-      # priority use the map to change from the symbol to the raw numeric value.
+      # priority: takes in an integer in the proper range.
       handle_priority(myhash, params)
           
       # * parent : This is used to Pro accounts that have access to subtasks. 
@@ -348,72 +341,10 @@ module Toodledo
     
       result = call('getTasks', myhash, @key)
       tasks = []
-      # There's probably a cleverer way of doing this.  Oh well.
-      result.elements.each { |el| 
-        id = el.elements['id'].text
-        folder_id = el.elements['folder'].text
-        folder = get_folder_by_id(folder_id);
-        if (folder == nil)
-          folder = Folder::NO_FOLDER
-        end
-        
-        goal_id = el.elements['goal'].attributes['id']
-        goal = get_goal_by_id(goal_id)
-        if (goal == nil)
-          goal = Goal::NO_GOAL
-        end
-        
-        context_id = el.elements['context'].attributes['id']
-        context = get_context_by_id(context_id)      
-        if (context == nil)
-          context = Context::NO_CONTEXT
-        end
-        
-        # XXX Add duedate logic
-        duedate = el.elements['duedate'].text
-        duedatemodifier = nil
-        
-        # XXX Add date logic
-        added = el.elements['added'].text
-        modified = el.elements['modified'].text
-        completed = el.elements['completed'].text
-        
-        repeat = el.elements['repeat'].text
-        
-        priority = el.elements['priority'].text
-        
-        # Add parent / children logic
-        parent = el.elements['parent'].text
-        children = el.elements['children'].text
-        
-        title = el.elements['title'].text
-        tag = el.elements['tag'].text
-        length = el.elements['length'].text
-        timer = el.elements['timer'].text
-        note = el.elements['note'].text
-        
-        params = {
-           :parent => parent,
-           :children => children,
-           :title => title,
-           :tag => tag,
-           :folder => folder,
-           :context => context,
-           :goal => goal,
-           :added => added,
-           :modified => modified,
-           :duedate => duedate,
-           :duedatemodifier => duedatemodifier,
-           :completed => completed,
-           :repeat => repeat,
-           :priority => priority,
-           :length => length,
-           :timer => timer,
-           :note => note,
-        }
-        task = Task.new(id, params)
+      result.elements.each do |el| 
+        task = Task.parse(self, el)
         tasks << task
-      }
+      end
       return tasks
     end
   
@@ -427,7 +358,8 @@ module Toodledo
     #   folder: folder id or String matching the folder name
     #   context: context id or String matching the context name
     #   goal: goal id or String matching the Goal Name
-    #   duedate: Time or String object "YYYY-MM-DD" }
+    #   duedate: Time or String object "YYYY-MM-DD".  If this is a string, it 
+    #   may take an optional modifier.
     #   duetime: Time or String object "MM:SS p"}    
     #   parent: parent id }
     #   repeat: one of { :none, :weekly, :monthly :yearly :daily :biweekly, 
@@ -455,7 +387,7 @@ module Toodledo
       handle_goal(myhash, params)
     
       # duedate handling.  Take either a string or a Time object.'YYYY-MM-DD'
-      handle_duedate(myhash, params)
+      handle_date(myhash, params, :duedate)
     
       # duetime handling.  Take either a string or a Time object. 
       handle_time(myhash, params, :duetime)
@@ -509,7 +441,7 @@ module Toodledo
       handle_goal(myhash, params)
 
       # duedate handling.  Take either a string or a Time object.'YYYY-MM-DD'
-      handle_duedate(myhash, params)
+      handle_date(myhash, params, :duedate)
 
       # duetime handling.  Take either a string or a Time object. 
       handle_time(myhash, params, :duetime)
@@ -588,19 +520,12 @@ module Toodledo
       contexts_by_name = {} 
       contexts_by_id = {}    
       contexts = []
-      # should return something like      
-      # <contexts>
-      #   <context id="123">Work</context>
-      #   <context id="456">Home</context>
-      #   <context id="789">Car</context>
-      # </contexts>
+      
       result.elements.each { |el|
-        id = el.attributes['id']
-        name = el.text
-        context = Context.new(id, name)
-        contexts.push(context)
-        contexts_by_id[id] = context
-        contexts_by_name[name.downcase] = context
+        context = Context.parse(self, el)
+        contexts << context
+        contexts_by_id[context.server_id] = context
+        contexts_by_name[context.name.downcase] = context
       }
       @contexts_by_id = contexts_by_id
       @contexts_by_name = contexts_by_name
@@ -686,26 +611,18 @@ module Toodledo
      
       result = call('getGoals', {}, @key)
    
-      # <goals>
-      #   <goal id="123" level="0" contributes="0">Get a Raise</goal>
-      #   <goal id="456" level="0" contributes="0">Lose Weight</goal>
-      #   <goal id="789" level="1" contributes="456">Exercise regularly</goal>
-      # </goals>
       goals_by_name = {}
       goals_by_id = {}
       goals = []
-      result.elements.each { |el| 
-         id = el.attributes['id']
-         level = el.attributes['level'].to_i
-         contributes_id = el.attributes['contributes']
-         name = el.text
-         goal = Goal.new(id, level, contributes_id, name)
+      result.elements.each do |el|        
+         goal = Goal.parse(self, el)
          goals << goal
-         goals_by_id[id] = goal
-         goals_by_name[name.downcase] = goal
-      }
+         goals_by_id[goal.server_id] = goal
+         goals_by_name[goal.name.downcase] = goal
+      end
       
-      # Loop through and make sure we've got a reference for every contributing goal.
+      # Loop through and make sure we've got a reference for every contributing 
+      # goal.
       for goal in goals
         next if (goal.contributes_id == Goal::NO_GOAL.server_id)
         parent_goal = goals_by_id[goal.contributes_id]
@@ -719,13 +636,15 @@ module Toodledo
     end
       
     # 
-    # Adds a new goal with the given title, the level (short to long term) and the contributing goal id.
+    # Adds a new goal with the given title, the level (short to long term) and 
+    # the contributing goal id.
     #
     def add_goal(title, level = 0, contributes = 0)
       logger.debug("add_goal(#{title}, #{level}, #{contributes})") if logger
       raise "Nil title" if (title == nil)
 
-      result = call('addGoal', { :title => title, :level => level, :contributes => contributes }, @key)
+      params = { :title => title, :level => level, :contributes => contributes }
+      result = call('addGoal', params, @key)
       
       flush_goals()
 
@@ -805,14 +724,10 @@ module Toodledo
       folders_by_name = {}
       folders_by_id = {}
       result.elements.each { |el| 
-          id = el.attributes['id']
-          is_private = el.attributes['private']
-          archived = el.attributes['archived']
-          name = el.text
-          folder = Folder.new(id, is_private, archived, name)
+          folder = Folder.parse(self, el)
           folders.push(folder)
-          folders_by_name[name.downcase] = folder # lowercase the key search
-          folders_by_id[id] = folder
+          folders_by_name[folder.name.downcase] = folder # lowercase the key search
+          folders_by_id[folder.server_id] = folder
       }
       @folders = folders
       @folders_by_name = folders_by_name
@@ -898,7 +813,11 @@ module Toodledo
     end
   
     ############################################################################
-    # Protected methods follow
+    # Helper methods follow.
+    # 
+    # These methods will convert the appropriate format for talking to the
+    # Toodledo server.  They do not parse the XML that comes back from the
+    # server.
     ############################################################################
   
     def handle_number(myhash, params, symbol)
@@ -939,38 +858,48 @@ module Toodledo
   
     def handle_date(myhash, params, symbol)
       value = params[symbol]
-      if (value != nil)
-        if (value.kind_of? Time)
-          myhash.merge!({ symbol => value.strftime('%Y-%m-%d')})
-        else
-          myhash.merge!({ symbol => value })          
-        end
+      if (value == nil)
+        return
       end
+      
+      case value
+      when Time
+        value = value.strftime('%Y-%m-%d')    
+      end
+      
+      myhash.merge!({ symbol => value }) 
     end
   
-    def handle_time(myhash, params, symbol)
+    def handle_time(myhash, params, symbol)      
       value = params[symbol]
-      if (value != nil)
-        if (value.kind_of? Time)
-          myhash.merge!({ symbol => value.strftime('%H:%M %p')})
-        else
-          myhash.merge!({ symbol => value })                      
-        end
+      if (value == nil)
+        return
       end
+      
+      case value
+      when Time
+        value = value.strftime(TIME_FORMAT) 
+      end
+      
+      myhash.merge!({ symbol => value })
     end
 
+    # Handles a generic date time value.
     def handle_datetime(myhash, params, symbol)
       # YYYY-MM-DD HH:MM:SS
       value = params[symbol]
-      if (value != nil)
-        if (value.kind_of? Time)
-          myhash.merge!({ symbol => value.strftime('%Y-%m-%d %H:%M:%S')})
-        else
-          myhash.merge!({ symbol => value })                      
-        end
+      if (value == nil)
+        return
       end
+      
+      case value
+      when Time
+        value = value.strftime(DATETIME_FORMAT)     
+      end
+      
+      myhash.merge!({ symbol => value })                              
     end
-  
+    
     # Handles the parent task object.  Only takes a task object or id.
     def handle_parent(myhash, params)
       parent = params[:parent]
@@ -1062,62 +991,39 @@ module Toodledo
       # Otherwise, assume it's a number.
       myhash.merge!({ :goal => goal_id })
     end
-  
-    # XXX add special logic to handle duedate modifiers
-    def handle_duedate(myhash, params)
-      handle_date(myhash, params, :duedate)
-    end
-  
-    def handle_duetime(myhash, params)
-      handle_time(myhash, params, :duetime)
-    end
 
+    # Handles the repeat parameter.
     def handle_repeat(myhash, params)
       repeat = params[:repeat]
-      if (repeat != nil)        
-        if (repeat.kind_of? Symbol)
-          repeat = REPEAT_MAP[repeat]
-        elsif (repeat.kind_of? String)
-          repeat = repeat.intern
-          validate_symbol(repeat, REPEAT_MAP.keys)
-          repeat = REPEAT_MAP[repeat.intern]
-        else
-          possible_values = REPEAT_MAP.keys.join(", ")
-          raise ":repeat must be one of the following: " + possible_values
-        end
-    
-        repeat = REPEAT_MAP[params[:repeat]]
-        myhash.merge!({ :repeat => repeat })
+      
+      if (repeat == nil)   
+        return
       end
+      
+      if (! Repeat.valid?(repeat))
+        raise "Invalid repeat value: #{repeat}"
+      end
+      
+      myhash.merge!({ :repeat => repeat })
     end
 
+    # Handles the priority.  This must be one of several values.
     def handle_priority(myhash, params)
       priority = params[:priority]
-      if (priority != nil)
-        if (priority.kind_of? Symbol)        
-          priority = PRIORITY_MAP[priority]          
-        elsif (priority.kind_of? String) 
-          priority = priority.intern
-          validate_symbol(priority, PRIORITY_MAP.keys)
-          priority = PRIORITY_MAP[priority]        
-        elsif (priority.kind_of? Fixnum)
-          raise "Invalid priority: #{priority}" if (priority < -1 || priority > 3)
-        end
-        myhash.merge!({ :priority => priority })
-      end      
-    end
- 
-    #  Hashes the input string and returns a string hex digest.
-    def md5(input_string)
-      return Digest::MD5.hexdigest(input_string)
-    end
-  
-    def validate_symbol(symbol, possible_keys)
-      if (! possible_keys.include?(symbol))
-        possible_values = possible_keys.keys.join(", ")
-        raise "symbol must be one of the following: " + possible_values
+      
+      if (priority == nil)
+        return nil
       end
+
+      if (! Priority.valid?(priority))
+        raise "Invalid priority value: #{priority}"
+      end
+      
+      myhash.merge!({ :priority => priority })        
     end
-    
+   
   end
 end
+
+
+

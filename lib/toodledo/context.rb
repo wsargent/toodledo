@@ -22,6 +22,17 @@ module Toodledo
       return "@[#{name}]"
     end
     
+    
+    # 
+    # Parses the context of an element.
+    #
+    def self.parse(session, el)
+      id = el.attributes['id']
+      name = el.text
+      context = Context.new(id, name)
+      return context
+    end
+    
     def to_xml()
       return "<context id=\"#{@id}\">#{@name}</context>"
     end

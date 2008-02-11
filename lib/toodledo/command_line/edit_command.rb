@@ -10,7 +10,12 @@ module Toodledo
        end
        
       def execute(args)
-        Toodledo.begin do |session|       
+        if (client.debug?)
+          logger = Logger.new(STDOUT)
+          logger.level = Logger::DEBUG
+        end
+        
+        Toodledo.begin(logger) do |session|       
           line = args.join(' ')
           client.edit_task(session, line)
         end
