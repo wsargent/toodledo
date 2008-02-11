@@ -1,5 +1,7 @@
-toodledo
-http://toodledo.rubyforge.org
+= toodledo
+
+* http://toodledo.rubyforge.org
+* mailto:will@tersesystems.com
 
 == DESCRIPTION:
 
@@ -20,82 +22,87 @@ your own.
 * Interactive client interface
 * Fully featured session based API
 * Supports Proxy and SSL usage
+* Easy configuration and automation (Quicksilver / Scripts / Automator)
 
 == SYNOPSIS:
  
-  Toodledo has a particularly rich model of a task, and allows full GTD
-  type state to be attached to them.  The client syntax for the client
-  is as follows:
+Toodledo has a particularly rich model of a task, and allows full GTD
+type state to be attached to them.  The client syntax for the client
+is as follows:
 
-    *Folder
-    @Context
-    $Goal
-  
-  You can encase the symbol with square brackets if there is a space
-  involved:
-  
-    *[Blue Sky]
-    @[Someday / Maybe]
-    $[Write Toodledo Ruby API]
-    
-  Let's use the command line client to list only the tasks you have in the office:
-  
-    toodledo list '@Office *Action'
+  *Folder
+  @Context
+  $Goal
 
-  In interactive mode, the client will also allow you to set up filters.  If you 
-  type 'folder', 'context' or 'goal' with an argument, then only tasks that match 
-  those criteria will be displayed.  That is, if you do this:
-  
-    context Office
-    folder Action
-    list
-  
-  Then it produces the same results as the previous list command.
-  
-  You can add tasks.  The simplest form is here:
-  
-    toodledo add 'This is a test'
-  
-  Now let's add a task with several symbols:
-  
-    toodledo add '*Action @Programming $[Write Toodledo Ruby API] Write documentation'
-  
-  You can also edit tasks, using the task id.  This sets the folder to Someday:
-  
-    toodledo edit '*Someday 15934131'
-  
-  And finally you can complete or delete tasks, again using the task id.
-  
-    toodledo complete 15934131
-    toodledo delete 15934131
-  
-  If you want to write your own scripts, working with Toodledo is very
-  simple, since it will use the YAML config file:
+You can encase the symbol with square brackets if there is a space
+involved:
 
-    require 'toodledo'
-    Toodledo.begin do |session|
-      # work with session
-    end
+  *[Blue Sky]
+  @[Someday / Maybe]
+  $[Write Toodledo Ruby API]
   
-  If you want to work with the session directly, then you should do
-  this instead:
-  
-    require 'toodledo/session'
-    session = Session.new(userid, password)
-    session.connect()
+Let's use the command line client to list only the tasks you have in the office:
+
+  toodledo list '@Office *Action'
+
+In interactive mode, the client will also allow you to set up filters.  If you 
+type 'folder', 'context' or 'goal' with an argument, then only tasks that match 
+those criteria will be displayed.  That is, if you do this:
+
+  context Office
+  folder Action
+  list
+
+Then it produces the same results as the previous list command.
+
+You can add tasks.  The simplest form is here:
+
+  toodledo add 'This is a test'
+
+Now let's add a task with several symbols:
+
+  toodledo add '*Action @Programming $[Write Toodledo Ruby API] Write documentation'
+
+You can also edit tasks, using the task id.  This sets the folder to Someday:
+
+  toodledo edit '*Someday 15934131'
+
+And finally you can complete or delete tasks, again using the task id.
+
+  toodledo complete 15934131
+  toodledo delete 15934131
+
+If you want to write your own scripts, working with Toodledo is very
+simple, since it will use the YAML config file:
+
+  require 'rubygems'
+  require 'toodledo'
+  Toodledo.begin do |session|
+    # work with session
+  end
+
+If you want to work with the session directly, then you should do
+this instead:
+
+  require 'rubygems'
+  require 'toodledo'
+  session = Session.new(userid, password)
+  session.connect()
 
 == REQUIREMENTS:
 
 * A connection to the Internet
 * An account to http://toodledo.com
 * Your Toodledo userid (see http://www.toodledo.com/info/api_doc.php)
-* Ruby
+* cmdparse
+* highline
+* rubygems
 
 == INSTALL:
 
 * sudo gem install toodledo
 * toodledo setup (sets up the YAML file with your credentials)
-* toodledo
+* toodledo interactive
 
 == LICENSE:
 		   GNU LESSER GENERAL PUBLIC LICENSE
