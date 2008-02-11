@@ -1,5 +1,6 @@
 
 require 'toodledo/repeat'
+require 'toodledo/priority'
 
 module Toodledo
 
@@ -46,6 +47,7 @@ module Toodledo
       @id = id
 
       @title = params[:title]
+      @tag = params[:tag]
 
       @parent_id = params[:parent]
       @children = params[:children]
@@ -82,9 +84,9 @@ module Toodledo
     end
 
     def to_s()
-      if (priority == -1)
+      if (priority == Priority::NEGATIVE)
         fancyp = 'v'
-      elsif (priority == 0)
+      elsif (priority == Priority::LOW)
         fancyp = '~'
       else
         fancyp = '!' * priority
@@ -109,7 +111,7 @@ module Toodledo
         msg += " \#[#{duedatemodifier}#{duedate.strftime(fmt)}]"
       end
 
-      if (repeat != nil)
+      if (repeat != Repeat::NONE)
         msg += " repeat[#{readable_repeat()}]"
       end
 
@@ -310,6 +312,7 @@ module Toodledo
       #  <timer>#{@timer}</timer>
       #  <note>#{@note}</note>
       # #</task>
+      return 'implement me!'
     end
 
   end
