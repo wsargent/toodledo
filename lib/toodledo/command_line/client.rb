@@ -156,9 +156,33 @@ module Toodledo
       # will only show tasks that have this context.
       #
       def set_priority_filter(session, input)
-        input = ask("Selected priority? > ") { |q| q.readline = true }  
+        if (input == nil)
+          input = ask("Selected priority? > ") { |q| q.readline = true }  
+        end
         
-        # XXX Should look for 'high' / 'medium' / 'low' and convert
+        input.strip!
+        
+        if (input =~ /^(\d+)$/)
+          input = input.to_i
+        else
+          input = input.downcase
+          case input 
+          when 'negative'
+            input = Priority::NEGATIVE
+          when 'low'
+            input = Priority::LOW
+          when 'medium'
+            input = Priority::MEDIUM
+          when 'high'
+            input = Priority::HIGH
+          when 'top'
+            input = Priority::TOP
+          end
+        end
+        
+        if (! Priority.valid?(input))
+          puts "Unknown priority \"#{input}\" -- (valid range is between -1..3)"          
+        end
         
         @filters[:priority] = input
       end
