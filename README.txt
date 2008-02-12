@@ -13,8 +13,8 @@ The client allows you to work with Toodledo from the command line. It will
 work in either interactive or command line mode.
 
 You can also use the client in your shell scripts, or use the API directly
-as part of a web application.  Don't like Toodledo's interface?  Write 
-your own.
+as part of a web application.  Want an RSS feed?  Want to have the Mac read
+out your top priority?  It can all happen.
 
 == FEATURES/PROBLEMS:
 

@@ -1,3 +1,7 @@
+== 1.0.1 / 2008-02-11
+
+* Fix bug in client where priority filter was not being applied.
+
 == 1.0.0 / 2008-02-10
 
 * First version released!

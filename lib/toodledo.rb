@@ -5,7 +5,7 @@
 module Toodledo
 
   # Required for gem  
-  VERSION = '1.0.0'
+  VERSION = '1.0.1'
   
   # Returns the configuration object.
   def self.get_config()
