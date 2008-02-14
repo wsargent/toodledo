@@ -10,15 +10,15 @@ module Toodledo
        end
        
       def execute(args)
-        if (client.debug?)
-          logger = Logger.new(STDOUT)
-          logger.level = Logger::DEBUG
+        Toodledo.begin(client.logger) do |session|       
+          line = args.join(' ')
+          return client.edit_task(session, line)
         end
         
-        Toodledo.begin(logger) do |session|       
-          line = args.join(' ')
-          client.edit_task(session, line)
-        end
+        return 0
+      rescue ItemNotFoundError => e
+        puts e.message
+        return -1
       end
     end
   end

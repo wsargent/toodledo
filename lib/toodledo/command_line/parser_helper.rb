@@ -36,16 +36,18 @@ module Toodledo
       end
   
       # Returns the bit after we've looked for *Folder, @Context & $Goal
-      def parse_remainder(input)    
-        biggest_pos = 0
+      def parse_remainder(line)    
+        
+        input = line
+
+        # Strip out anything that isn't folder, goal or context.
         for regexp in [ FOLDER_REGEXP, GOAL_REGEXP, CONTEXT_REGEXP]
-          match = regexp.match(input)
-          next if (match == nil)
-          re_end = match.end(0)
-          biggest_pos = re_end if (biggest_pos < re_end)
+          input = input.sub(regexp, '')
         end
     
-        return input[(biggest_pos)..input.length].strip!
+        input.strip!
+    
+        return input
       end
   
       # Strips a string of [ and ] characters

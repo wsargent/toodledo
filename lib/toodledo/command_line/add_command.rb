@@ -12,17 +12,16 @@ module Toodledo
       end
       
       def execute(args)
-        return if (args == nil)
-        
-        if (client.debug?)
-          logger = Logger.new(STDOUT)
-          logger.level = Logger::DEBUG
-        end
-        
-        Toodledo.begin(logger) do |session|            
+        return if (args == nil)                
+        Toodledo.begin(client.logger) do |session|            
           line = args.join(' ')
           client.add_task(session, line)
         end
+          
+        return 0
+      rescue ItemNotFoundError => e
+        puts e.message
+        return -1
       end      
     end
   end  

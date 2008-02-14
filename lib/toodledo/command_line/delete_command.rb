@@ -8,16 +8,16 @@ module Toodledo
         self.description = "Deletes a task from Toodledo."
       end
 
-      def execute(args)
-        if (client.debug?)
-          logger = Logger.new(STDOUT)
-          logger.level = Logger::DEBUG
-        end
-        
-        Toodledo.begin(logger) do |session|            
+      def execute(args)       
+        Toodledo.begin(client.logger) do |session|            
           line = args.join(' ')
           client.delete_task(session, line)
         end
+        
+        return 0
+      rescue ItemNotFoundError => e
+        puts e.message
+        return -1
       end
     end
   end

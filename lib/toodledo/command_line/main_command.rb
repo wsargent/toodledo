@@ -13,13 +13,8 @@ module Toodledo
         self.description = "The interactive command line client."        
       end
       
-      def execute(args)        
-        if (client.debug?)
-          logger = Logger.new(STDOUT)
-          logger.level = Logger::DEBUG
-        end
-        
-        Toodledo.begin(logger) do |session|            
+      def execute(args)
+        Toodledo.begin(client.logger) do |session|            
           command_loop(session)
         end
       end
@@ -128,6 +123,14 @@ module Toodledo
               
               when /^unfilter/
               client.unfilter()
+              
+            when /debug/
+              client.debug = ! client.debug?
+              if (client.debug?)
+                logger.level = Logger::DEBUG
+              else
+                logger.level = Logger::FATAL
+              end
               
               when /^quit/, /^exit/
               break;

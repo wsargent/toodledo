@@ -45,6 +45,8 @@ module Toodledo
       def initialize(userconfig=CONFIG_F, opts={})
         @filters = {}
         @debug = false
+        @logger = Logger.new(STDOUT)
+        @logger.level = Logger::FATAL
         
         @userconfig = test(?e, userconfig) ? IO::read(userconfig) : CONFIG
         @userconfig = YAML.load(@userconfig).merge(opts)
@@ -56,6 +58,15 @@ module Toodledo
       
       def debug=(is_debug)
         @debug = is_debug
+        if (@debug == true)
+          @logger.level = Logger::DEBUG
+        else
+          @logger.level = Logger::FATAL
+        end
+      end
+            
+      def logger
+        return @logger
       end
             
       #
@@ -263,6 +274,7 @@ module Toodledo
       # but that'll come by demand.  Or patches.  Fully documented patches, mmmm.
       #
       def hotlist(session, input)
+        logger.debug("hotlist: #{input}")
         
         # See if there's input following the command.
         context = parse_context(input)
@@ -386,17 +398,23 @@ module Toodledo
       # task.  Note that you must specify the ID here.  
       #
       # edit *Action 12345
-      def edit_task(session, input)        
+      def edit_task(session, input)  
+        logger.debug("edit_task: #{input.inspect}")
+        
         context = parse_context(input)
         folder = parse_folder(input)
         goal = parse_goal(input)
         task_id = parse_remainder(input)
         
-        params = {  }
+        logger.debug("edit_task: task_id = #{task_id}")
         
         if (task_id == nil)
           task_id = ask("Task ID?: ") { |q| q.readline = true }
         end
+        
+        task_id.strip!
+        
+        params = {  }
         
         if (folder != nil)
           params.merge!({ :folder => folder })
@@ -426,6 +444,8 @@ module Toodledo
           task_id = ask("Task ID?: ") { |q| q.readline = true }  
         end
         
+        task_id.strip!
+                
         params = { :completed => 1 }
         if (session.edit_task(task_id, params))
           puts "Task #{task_id} completed."
@@ -444,6 +464,8 @@ module Toodledo
         if (task_id == nil)
           task_id = ask("Task ID?: ") { |q| q.readline = true }
         end
+        
+        task_id.strip!
         
         if (session.delete_task(task_id))
           puts "Task #{task_id} deleted."

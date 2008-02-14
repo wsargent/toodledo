@@ -840,7 +840,7 @@ module Toodledo
         bool = (value == true) ? '1' : '0'           
       when String
         bool = ('true' == value.downcase) ? '1' : '0' 
-      when FixNum
+      when Fixnum
         bool = (value == 1) ? '1' : '0'
       else
         bool = value

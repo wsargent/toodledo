@@ -1,3 +1,11 @@
+== 1.0.2 / 2008-02-13
+
+* Fix a silly bug where whitespace wasn't stripped from edit, complete and delete.
+* Enable interactive debug, and refactor the logging to be in client, not commands.
+* Enable toodledo symbols to be anywhere in the string, not just before the task.
+* Cleaner error messages if the task id is not found.
+* Make sure failed commands exit with non-zero status.
+
 == 1.0.1 / 2008-02-11
 
 * Fix bug in client where priority filter was not being applied.

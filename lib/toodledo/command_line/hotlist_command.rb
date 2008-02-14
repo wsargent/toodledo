@@ -7,16 +7,13 @@ module Toodledo
         self.description = "Shows the hotlist in Toodledo."
       end
       
-      def execute(args)  
-        if (client.debug?)
-          logger = Logger.new(STDOUT)
-          logger.level = Logger::DEBUG
-        end
-        
-        Toodledo.begin(logger) do |session|   
+      def execute(args)        
+        Toodledo.begin(client.logger) do |session|   
           line = args.join(' ')
           client.hotlist(session, line)
         end
+        
+        return 0
       end
     end
   end 
