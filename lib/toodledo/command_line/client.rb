@@ -177,18 +177,7 @@ module Toodledo
           input = input.to_i
         else
           input = input.downcase
-          case input 
-          when 'negative'
-            input = Priority::NEGATIVE
-          when 'low'
-            input = Priority::LOW
-          when 'medium'
-            input = Priority::MEDIUM
-          when 'high'
-            input = Priority::HIGH
-          when 'top'
-            input = Priority::TOP
-          end
+          input = Priority.convert(input)
         end
         
         if (! Priority.valid?(input))

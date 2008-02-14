@@ -30,5 +30,22 @@ module Toodledo
       return false
     end
     
+    def self.convert(input)
+      case input 
+      when 'negative'
+        return Priority::NEGATIVE
+      when 'low'
+        return Priority::LOW
+      when 'medium'
+        return Priority::MEDIUM
+      when 'high'
+        return Priority::HIGH
+      when 'top'
+        return Priority::TOP
+      else
+        raise ArgumentError.new("Unknown priority: #{input}") 
+      end
+    end
+    
   end
 end
