@@ -1,4 +1,8 @@
-== 1.0.2 / 2008-02-13
+== 1.0.3 / 
+
+* Fix the debug command so it doesn't crash the interactive client.
+
+== 1.0.2 / 2008-02-14
 
 * Fix a silly bug where whitespace wasn't stripped from edit, complete and delete.
 * Enable interactive debug, and refactor the logging to be in client, not commands.
