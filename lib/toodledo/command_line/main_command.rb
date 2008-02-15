@@ -126,11 +126,6 @@ module Toodledo
               
             when /debug/
               client.debug = ! client.debug?
-              if (client.debug?)
-                logger.level = Logger::DEBUG
-              else
-                logger.level = Logger::FATAL
-              end
               
               when /^quit/, /^exit/
               break;
