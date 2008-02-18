@@ -8,7 +8,8 @@ require 'yaml'
 require 'toodledo'
 require 'toodledo/command_line/parser_helper'
 require 'toodledo/command_line/base_command'
-require 'toodledo/command_line/main_command'
+require 'toodledo/command_line/interactive_command'
+require 'toodledo/command_line/stdin_command'
 require 'toodledo/command_line/add_command'
 require 'toodledo/command_line/list_command'
 require 'toodledo/command_line/edit_command'
@@ -320,6 +321,8 @@ module Toodledo
       # Lists tasks (subject to any filters that may be present).
       #
       def list_tasks(session, input)
+        logger.debug("list_tasks(#{input})")
+        
         params = { :notcomp => true }
         
         params.merge!(@filters)
@@ -496,6 +499,113 @@ module Toodledo
       end
       
       #
+      # Displays the help message.
+      #
+      def help()
+        puts "hotlist -- shows the hotlist\n"
+        puts "tasks -- shows tasks ('tasks *Action @Home')"
+        puts "list -- does the same as tasks"
+        puts 
+        puts "add -- adds a task ('add *Action @Home Eat breakfast')"
+        puts "edit -- edits a task ('edit *Action 1134')"
+        puts "complete -- completes a task ('complete 1234')\n"
+        puts "delete -- deletes a task ('delete 1134')"
+        puts
+        puts "context -- defines a context filter on tasks"
+        puts "goal -- defines a goal filter on tasks"
+        puts "folder -- defines a folder filter on tasks\n"
+        puts "priority -- defines a priority filter on tasks\n"
+        puts "unfilter -- removes all filters on tasks\n"
+        puts
+        puts "folders -- shows all folders\n"
+        puts "goals -- shows all goals"
+        puts "contexts -- shows all contexts"
+        puts
+        puts "config -- displays the current configuration"
+        puts
+        puts "help or ? -- displays this help message\n"
+        puts "quit or exit -- Leaves the application"
+      end
+      
+      def clean(regexp, input)
+        return input.sub(regexp, '')
+      end
+      
+      def execute_command(session, input)    
+        case input
+          when /^help/, /^\s*\?/
+          help()
+          
+          when /^add/
+          line = clean(/^add/, input)
+          add_task(session, line)
+          
+          when /^edit/
+          line = clean(/^edit/, input)
+          edit_task(session, line)
+          
+          when /^delete/
+          line = clean(/^delete/, input)
+          delete_task(session, line)
+          
+          when /^hotlist/
+          line = clean(/^hotlist/, input)
+          hotlist(session, line)
+          
+          when /^complete/
+          line = clean(/^complete/, input)
+          complete_task(session, line)
+          
+          when /^tasks/, /^list/
+          line = clean(/^(tasks|list)/, input)
+          list_tasks(session, line)
+          
+          when /^folders/
+          line = clean(/^folders/, input)
+          folders(session)
+          
+          when /^goals/
+          goals(session)
+          
+          when /^contexts/
+          contexts(session)
+          
+          when /^context/
+          line = clean(/^context/, input)
+          set_context_filter(session, line)
+          
+          when /^folder/
+          line = clean(/^folder/, input)
+          set_folder_filter(session, line)
+          
+          when /^goal/
+          line = clean(/^goal/, input)
+          set_goal_filter(session, line)
+          
+          when /^priority/
+          line = clean(/^priority/, input)
+          set_priority_filter(session, line)
+          
+          when /^config/
+          show_config(session)
+          
+          when /^filters/
+          list_filters()
+          
+          when /^unfilter/
+          unfilter()
+          
+          when /debug/
+          self.debug = ! client.debug?
+          
+          when /^quit/, /^exit/
+          exit 0
+        else
+          puts "'#{input}' is not a command: type help for a list"
+        end
+      end
+            
+      #
       # Runs the client main command.  This is what gets run from 'toodledo'.
       # Ironically doesn't do much except for set up the commands and parse
       # arguments from the command line.  The MainCommand class does the 
@@ -517,8 +627,11 @@ module Toodledo
           opt.separator "Global options:"
           opt.on("--debug", "Print debugging information") {|t| self.debug = true }
         end
+
+        # this is the default command if we don't receive any options.
+        cmd.add_command(InteractiveCommand.new(self), true)
         
-        cmd.add_command(MainCommand.new(self))
+        cmd.add_command(StdinCommand.new(self))
         
         cmd.add_command(AddCommand.new(self))
         cmd.add_command(ListCommand.new(self))
@@ -527,9 +640,8 @@ module Toodledo
         cmd.add_command(DeleteCommand.new(self))
         cmd.add_command(HotlistCommand.new(self))
         cmd.add_command(SetupCommand.new(self))
-        
-        # this is the default command if we don't receive any options.
-        cmd.add_command(CmdParse::HelpCommand.new, true)
+                
+        cmd.add_command(CmdParse::HelpCommand.new)
         cmd.add_command(CmdParse::VersionCommand.new)
         
         cmd.parse

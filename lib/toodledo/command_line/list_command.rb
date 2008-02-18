@@ -9,6 +9,7 @@ module Toodledo
       end
       
       def execute(args)
+        
         Toodledo.begin(client.logger) do |session|            
           line = args.join(' ')
           return client.list_tasks(session, line)

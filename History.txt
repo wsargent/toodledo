@@ -2,6 +2,7 @@
 
 == 1.1.0
 
+* Change to non-interactive default to read from pipe or redirected files
 * Added formatters for the client so it's easier to tweak line output.
 * Add unit tests for client.
 * Change symbol for goals from $ to ^ (was confusing client when entering 'I owe $5')
