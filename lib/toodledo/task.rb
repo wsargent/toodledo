@@ -1,6 +1,7 @@
 
 require 'toodledo/repeat'
 require 'toodledo/priority'
+require 'date'
 
 module Toodledo
 
