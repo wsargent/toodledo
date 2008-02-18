@@ -185,14 +185,14 @@ module Toodledo
         if (input =~ /^(\d+)$/)
           value = input.to_i
         else
-          value = Priority.convert(input.downcase)
+          value = parse_priority('!' + input.downcase)
         end
         
         if (! Priority.valid?(value))
           print "Unknown priority \"#{input}\" -- (priority must be one of top, high, medium, low, or negative)"
         end
         
-        @filters[:priority] = input
+        @filters[:priority] = value
       end
       
       #

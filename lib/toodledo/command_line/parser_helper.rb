@@ -47,17 +47,17 @@ module Toodledo
           return nil         
         end
         
-        p = match_data[0]
+        p = match_data[1]
         case p
-          when '!top'
+          when 'top'
             return Toodledo::Priority::TOP
-          when '!high'
+          when 'high'
             return Toodledo::Priority::HIGH
-          when '!medium'
+          when 'medium'
             return Toodledo::Priority::MEDIUM
-          when '!low'
+          when 'low'
             return Toodledo::Priority::LOW
-          when '!negative'
+          when 'negative'
             return Toodledo::Priority::NEGATIVE
           else
             return nil
