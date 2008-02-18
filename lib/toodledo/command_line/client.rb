@@ -17,6 +17,11 @@ require 'toodledo/command_line/complete_command'
 require 'toodledo/command_line/delete_command'
 require 'toodledo/command_line/setup_command'
 
+require 'toodledo/command_line/task_formatter'
+require 'toodledo/command_line/context_formatter'
+require 'toodledo/command_line/folder_formatter'
+require 'toodledo/command_line/goal_formatter'
+
 module Toodledo  
   module CommandLine
     
@@ -50,6 +55,12 @@ module Toodledo
         
         @userconfig = test(?e, userconfig) ? IO::read(userconfig) : CONFIG
         @userconfig = YAML.load(@userconfig).merge(opts)
+        @formatters = { 
+          :task => TaskFormatter.new,
+          :goal => GoalFormatter.new,
+          :context => ContextFormatter.new,
+          :folder => FolderFormatter.new
+        }
       end
       
       def debug?
@@ -91,9 +102,9 @@ module Toodledo
         user_id = session.user_id
         proxy = session.proxy
         
-        puts "base_url = #{base_url}"    
-        puts "user_id = #{user_id}"
-        puts "proxy = #{proxy.inspect}"
+        print "base_url = #{base_url}"    
+        print "user_id = #{user_id}"
+        print "proxy = #{proxy.inspect}"
       end
 
       # Sets the context filter.  Subsequent calls to show tasks
@@ -163,9 +174,7 @@ module Toodledo
         end
       end
       
-      # Sets the context filter.  Subsequent calls to show tasks
-      # will only show tasks that have this context.
-      #
+      # Sets the priority filter.
       def set_priority_filter(session, input)
         if (input == nil)
           input = ask("Selected priority? > ") { |q| q.readline = true }  
@@ -174,14 +183,13 @@ module Toodledo
         input.strip!
         
         if (input =~ /^(\d+)$/)
-          input = input.to_i
+          value = input.to_i
         else
-          input = input.downcase
-          input = Priority.convert(input)
+          value = Priority.convert(input.downcase)
         end
         
-        if (! Priority.valid?(input))
-          puts "Unknown priority \"#{input}\" -- (valid range is between -1..3)"          
+        if (! Priority.valid?(value))
+          print "Unknown priority \"#{input}\" -- (priority must be one of top, high, medium, low, or negative)"
         end
         
         @filters[:priority] = input
@@ -192,12 +200,12 @@ module Toodledo
       #
       def list_filters()        
         if (@filters.empty?)
-          puts "No filters."
+          print "No filters."
           return
         end
         
         @filters.each do |k, v|
-          puts "#{k}: #{v}\n"
+          print "#{k}: #{v}\n"
         end
       end
       
@@ -206,7 +214,7 @@ module Toodledo
       #
       def unfilter()
         @filters = {}
-        puts "Filters cleared.\n"
+        print "Filters cleared.\n"
       end
       
       #
@@ -220,7 +228,7 @@ module Toodledo
         end
         
         for folder in my_folders
-          puts "<#{folder.server_id}> -- #{folder}\n"
+          print @formatters[:folder].format(folder)
         end
       end
       
@@ -235,7 +243,7 @@ module Toodledo
         end
         
         for context in my_contexts
-          puts "<#{context.server_id}> -- #{context}\n"
+          print @formatters[:context].format(context)
         end
       end
       
@@ -250,7 +258,7 @@ module Toodledo
         end
         
         for goal in my_goals
-          puts "<#{goal.server_id}> -- #{goal}\n"
+          print @formatters[:goal].format(goal)
         end
       end
       
@@ -269,6 +277,7 @@ module Toodledo
         context = parse_context(input)
         folder = parse_folder(input)
         goal = parse_goal(input)
+        priority = parse_priority(input)
         
         params = { :notcomp => true }
         
@@ -285,6 +294,10 @@ module Toodledo
           params.merge!({ :goal => goal })
         end
         
+        if (priority != nil)
+          params.merge!({ :priority => priority })
+        end
+              
         tasks = session.get_tasks(params)
         
         # Highest priority first
@@ -298,7 +311,7 @@ module Toodledo
         
         for task in tasks
           if (task.priority > not_important)
-            puts "<#{task.server_id}> -- #{task}\n"
+            print @formatters[:task].format(task)
           end
         end
       end
@@ -315,6 +328,7 @@ module Toodledo
         context = parse_context(input)
         folder = parse_folder(input)
         goal = parse_goal(input)
+        priority = parse_priority(input)
         
         # If there are, they override what we have set.
         if (folder != nil)
@@ -329,6 +343,10 @@ module Toodledo
           params.merge!({ :goal => goal })
         end
         
+        if (priority != nil)
+          params.merge!({ :priority => priority })
+        end
+                
         tasks = session.get_tasks(params)
         
         # Highest priority first
@@ -337,7 +355,7 @@ module Toodledo
         end
         
         for task in tasks  
-          puts "<#{task.server_id}> -- #{task}\n"
+          print @formatters[:task].format(task)
         end
       end
       
@@ -356,9 +374,13 @@ module Toodledo
         context = parse_context(line)
         folder = parse_folder(line)
         goal = parse_goal(line)
+        priority = parse_priority(line)
         title = parse_remainder(line)
         
-        params = { :priority => Priority::LOW }
+        params = {}
+        if (priority != nil)
+          params.merge!({ :priority => priority })
+        end
         
         if (folder != nil)
           params.merge!({ :folder => folder })
@@ -379,7 +401,7 @@ module Toodledo
         
         task_id = session.add_task(title, params)
         
-        puts "Task #{task_id} added."
+        print "Task #{task_id} added."
       end
       
       #
@@ -393,6 +415,7 @@ module Toodledo
         context = parse_context(input)
         folder = parse_folder(input)
         goal = parse_goal(input)
+        priority = parse_priority(input)
         task_id = parse_remainder(input)
         
         logger.debug("edit_task: task_id = #{task_id}")
@@ -417,9 +440,13 @@ module Toodledo
           params.merge!({ :goal => goal })
         end
         
+        if (priority != nil)
+          params.merge!({ :priority => priority })
+        end
+        
         session.edit_task(task_id, params)
         
-        puts "Task #{task_id} edited."
+        print "Task #{task_id} edited."
       end
       
       # Masks the task as completed.  Uses a task id as argument.
@@ -437,9 +464,9 @@ module Toodledo
                 
         params = { :completed => 1 }
         if (session.edit_task(task_id, params))
-          puts "Task #{task_id} completed."
+          print "Task #{task_id} completed."
         else
-          puts "Task #{task_id} could not be completed!"      
+          print "Task #{task_id} could not be completed!"      
         end
       end
       
@@ -457,10 +484,15 @@ module Toodledo
         task_id.strip!
         
         if (session.delete_task(task_id))
-          puts "Task #{task_id} deleted."
+          print "Task #{task_id} deleted."
         else
-          puts "Task #{task_id} could not be deleted!"      
+          print "Task #{task_id} could not be deleted!"      
         end
+      end
+      
+      # Prints out a single line.
+      def print(line)        
+        puts line
       end
       
       #

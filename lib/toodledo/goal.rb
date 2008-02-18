@@ -62,13 +62,6 @@ module Toodledo
       return "<goal id=\"#{@id}\" level=\"#{@level}\" contributes=\"#{@contributes.server_id}\" name=\"#{@name}\">"
     end
     
-    def to_s()
-      msg = "$[#{name}]"
-      #if (contributes != NO_GOAL)
-      #  msg += " (Contributes to: #{contributes.name})"
-      #end
-      return msg
-    end
   end
   
 end

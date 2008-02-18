@@ -24,11 +24,11 @@ module Toodledo
       #
       def help()
         puts "hotlist -- shows the hotlist\n"
-        puts "tasks -- shows tasks ('tasks $[World Peace] *MyFolder' -- filters also apply)"
+        puts "tasks -- shows tasks ('tasks *Action @Home')"
         puts "list -- does the same as tasks"
         puts 
         puts "add -- adds a task ('add *Action @Home Eat breakfast')"
-        puts "edit -- edits a task ('edit *Action 1134' will move 1134 to Action folder)"
+        puts "edit -- edits a task ('edit *Action 1134')"
         puts "complete -- completes a task ('complete 1234')\n"
         puts "delete -- deletes a task ('delete 1134')"
         puts

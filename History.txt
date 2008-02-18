@@ -1,5 +1,11 @@
-== 1.0.3 / 
 
+
+== 1.1.0
+
+* Added formatters for the client so it's easier to tweak line output.
+* Add unit tests for client.
+* Change symbol for goals from $ to ^ (was confusing client when entering 'I owe $5')
+* Add proper priority support to the client (in the format !top, !high, etc.) 
 * Fix the debug command so it doesn't crash the interactive client.
 
 == 1.0.2 / 2008-02-14

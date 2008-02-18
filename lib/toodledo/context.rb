@@ -22,9 +22,8 @@ module Toodledo
       return "@[#{name}]"
     end
     
-    
     # 
-    # Parses the context of an element.
+    # Parses the context of an REXML element.
     #
     def self.parse(session, el)
       id = el.attributes['id']

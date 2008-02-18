@@ -25,43 +25,35 @@ out your top priority?  It can all happen.
 * Easy configuration and automation (Quicksilver / Scripts / Automator)
 
 == SYNOPSIS:
+
+=== COMMAND LINE:
  
-Toodledo has a particularly rich model of a task, and allows full GTD
-type state to be attached to them.  The client syntax for the client
-is as follows:
+You can add tasks.  The simplest form is here:
+
+  toodledo add 'This is a test'
+  
+But that's not all you can do.  Toodledo has a particularly rich  model of 
+a task, and allows full GTD  type state to be attached to them.  The syntax 
+for the client is as follows:
 
   *Folder
   @Context
-  $Goal
+  ^Goal
 
 You can encase the symbol with square brackets if there is a space
 involved:
 
   *[Blue Sky]
   @[Someday / Maybe]
-  $[Write Toodledo Ruby API]
+  ^[Write Toodledo Ruby API]
   
 Let's use the command line client to list only the tasks you have in the office:
 
   toodledo list '@Office *Action'
 
-In interactive mode, the client will also allow you to set up filters.  If you 
-type 'folder', 'context' or 'goal' with an argument, then only tasks that match 
-those criteria will be displayed.  That is, if you do this:
-
-  context Office
-  folder Action
-  list
-
-Then it produces the same results as the previous list command.
-
-You can add tasks.  The simplest form is here:
-
-  toodledo add 'This is a test'
-
 Now let's add a task with several symbols:
 
-  toodledo add '*Action @Programming $[Write Toodledo Ruby API] Write documentation'
+  toodledo add '*Action @Programming ^[Write Toodledo Ruby API] Write documentation'
 
 You can also edit tasks, using the task id.  This sets the folder to Someday:
 
@@ -72,7 +64,31 @@ And finally you can complete or delete tasks, again using the task id.
   toodledo complete 15934131
   toodledo delete 15934131
 
-If you want to write your own scripts, working with Toodledo is very
+=== INTERACTIVE CLIENT:
+
+Toodledo also comes with an interactive client:
+
+  toodledo interactive
+  > add This is a test
+  
+You can type help at the prompt for a complete list of commands.  The client 
+makes for a nice way to enter in tasks as you think of them.
+
+The client will also allow you to set up filters.  If you type 'folder', 
+'context' or 'goal' with an argument, then only tasks that match those 
+criteria will be displayed.  That is, if you do this:
+
+  context Office
+  folder Action
+  list
+
+Then it produces the same results as:
+
+  toodledo list 'Office *Action'
+  
+Although the following
+
+Finally, if you want to write your own scripts, working with Toodledo is very
 simple, since it will use the YAML config file:
 
   require 'rubygems'

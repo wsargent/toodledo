@@ -43,9 +43,8 @@ module Toodledo
       when 'top'
         return Priority::TOP
       else
-        raise ArgumentError.new("Unknown priority: #{input}") 
+        return nil
       end
     end
-    
   end
 end

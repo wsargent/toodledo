@@ -27,11 +27,8 @@ module Toodledo
     def archived?
       return @archived == 1
     end
-        
-    def to_s()
-      return "*[#{name}]"
-    end
-    
+      
+    # Creates a session object from an XML element.
     def self.parse(session, el)
       id = el.attributes['id']
       is_private = el.attributes['private']
@@ -45,6 +42,5 @@ module Toodledo
       return "<folder id=\"#{@id}\" private=\"#{@is_private}\" archived=\"#{@archived}\">#{@name}</folder>"
     end
   end
-  
   
 end
