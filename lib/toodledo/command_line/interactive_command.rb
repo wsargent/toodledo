@@ -28,7 +28,7 @@ module Toodledo
             
             input.strip!
             
-            client.execute_command(input)            
+            client.execute_command(session, input)            
           rescue Toodledo::ItemNotFoundError => infe
             puts "Item not found: #{infe}"
           rescue Toodledo::ServerError => se
