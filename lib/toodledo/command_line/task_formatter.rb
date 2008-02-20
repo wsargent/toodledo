@@ -26,7 +26,7 @@ module Toodledo
         end
   
         if (task.duedate != nil)
-          fmt = Session::DATE_FORMAT + ' ' + Session::TIME_FORMAT
+          fmt = '%m/%d/%Y %I:%M %p'
           msg += " \#[#{task.duedatemodifier}#{task.duedate.strftime(fmt)}]"
         end
   
@@ -46,6 +46,7 @@ module Toodledo
           msg += " timer[#{task.timer}]"
         end
         
+        # Use the highline color library
         msg += " #{task.title}"
               
         if (task.note != nil)

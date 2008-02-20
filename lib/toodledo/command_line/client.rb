@@ -495,7 +495,7 @@ module Toodledo
       
       # Prints out a single line.
       def print(line)        
-        puts line
+        say line
       end
       
       #
@@ -596,12 +596,12 @@ module Toodledo
           unfilter()
           
           when /debug/
-          self.debug = ! client.debug?
+          self.debug = ! self.debug?
           
           when /^quit/, /^exit/
           exit 0
         else
-          puts "'#{input}' is not a command: type help for a list"
+          print "'#{input}' is not a command: type help for a list"
         end
       end
             
