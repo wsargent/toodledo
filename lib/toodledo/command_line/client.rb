@@ -520,6 +520,42 @@ module Toodledo
         end
       end
       
+      def delete_context(session, line)
+        id = line
+        
+        id.strip!
+        
+        if (session.delete_context(id))
+          print "Context #{id} deleted."
+        else
+          print "Context #{id} could not be deleted!"      
+        end
+      end
+
+      def delete_goal(session, line)
+        id = line
+        
+        id.strip!
+        
+        if (session.delete_goal(id))
+          print "Goal #{id} deleted."
+        else
+          print "Goal #{id} could not be deleted!"      
+        end
+      end
+
+      def delete_folder(session, line)
+        id = line
+        
+        id.strip!
+        
+        if (session.delete_folder(id))
+          print "Folder #{id} deleted."
+        else
+          print "Folder #{id} could not be deleted!"      
+        end
+      end
+        
       # Prints out a single line.
       def print(line)        
         say line
