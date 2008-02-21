@@ -407,6 +407,33 @@ module Toodledo
         print "Task #{task_id} added."
       end
       
+      def add_context(session, input)
+        
+        title = input.strip
+        
+        context_id = session.add_context(title)
+        
+        print "Context #{context_id} added."
+      end
+      
+      def add_goal(session, input)
+        
+        title = input.strip
+        
+        goal_id = session.add_goal(title)
+        
+        print "Goal #{goal_id} added."
+      end
+      
+      def add_folder(session, input)
+        
+        title = input.strip
+        
+        folder_id = session.add_folder(title)
+        
+        print "Folder #{folder_id} added."
+      end
+      
       #
       # Edits a single task.  This method allows you to change the symbols on a
       # task.  Note that you must specify the ID here.  
