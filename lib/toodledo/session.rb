@@ -21,7 +21,9 @@ module Toodledo
     USER_AGENT = "Ruby/#{Toodledo::VERSION} (#{RUBY_PLATFORM})"
     
     HEADERS = {
-      'User-Agent' => USER_AGENT
+      'User-Agent' => USER_AGENT,
+      'Connection' => 'keep-alive',
+      'Keep-Alive' => '300'
     }
     
     EXPIRATION_TIME_IN_SECS = 60 * 60
