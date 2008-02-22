@@ -217,52 +217,7 @@ module Toodledo
         @filters = {}
         print "Filters cleared.\n"
       end
-      
-      #
-      # Shows all the folders for this user.
-      #
-      def folders(session)
-        my_folders = session.get_folders()
-        
-        my_folders.sort! do |a, b|
-          a.name <=> b.name
-        end
-        
-        for folder in my_folders
-          print @formatters[:folder].format(folder)
-        end
-      end
-      
-      #
-      # Shows all the contexts for this user.
-      #
-      def contexts(session)
-        my_contexts = session.get_contexts()
-        
-        my_contexts.sort! do |a, b|
-          a.name <=> b.name
-        end
-        
-        for context in my_contexts
-          print @formatters[:context].format(context)
-        end
-      end
-      
-      #
-      # Shows all the goals for this user.
-      #
-      def goals(session)
-        my_goals = session.get_goals()
-        
-        my_goals.sort! do |a, b|
-          a.level <=> b.level
-        end
-        
-        for goal in my_goals
-          print @formatters[:goal].format(goal)
-        end
-      end
-      
+            
       #
       # Displays the 'hotlist' of tasks.  This shows all the uncompleted items with
       # priority set to 3 or 2.  There's no facility in the API for this, so we have
@@ -359,6 +314,65 @@ module Toodledo
         
         for task in tasks  
           print @formatters[:task].format(task)
+        end
+      end
+      
+      #
+      # Lists the goals.  Takes an optional argument of 
+      # 'short', 'medium' or 'life'.
+      #
+      def list_goals(session, input)
+        
+        input.strip!
+        input.downcase!
+                
+        goals = session.get_goals()
+        
+        goals.sort! do |a, b|
+          a.level <=> b.level
+        end
+        
+        level_filter = nil
+        case input
+        when 'short'
+          level_filter = Goal::SHORT_LEVEL
+        when 'medium'
+          level_filter = Goal::MEDIUM_LEVEL
+        when 'life'
+          level_filter = Goal::LIFE_LEVEL
+        end
+        
+        for goal in goals
+          if (level_filter != nil && goal.level != level_filter)
+            next # skip this goal if it doesn't meet the filter
+          end
+          print @formatters[:goal].format(goal)
+        end
+      end
+      
+      #
+      # Lists the contexts.
+      #
+      def list_contexts(session, input)
+        params = { }
+        
+        contexts = session.get_contexts()
+        
+        for context in contexts
+          print @formatters[:context].format(context)
+        end
+      end
+      
+      #
+      # Lists the folders.
+      #
+      def list_folders(session, input)
+        params = { }
+        
+        folders = session.get_folders()
+        
+        for folder in folders
+          print @formatters[:folder].format(folder)
         end
       end
       
@@ -625,13 +639,15 @@ module Toodledo
           
           when /^folders/
           line = clean(/^folders/, input)
-          folders(session)
+          list_folders(session,line)
           
           when /^goals/
-          goals(session)
+          line = clean(/^goals/, input)
+          list_goals(session,line)
           
           when /^contexts/
-          contexts(session)
+          line = clean(/^contexts/, input)
+          list_contexts(session,line)
           
           when /^context/
           line = clean(/^context/, input)
