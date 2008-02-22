@@ -2,6 +2,9 @@
 module Toodledo  
   module CommandLine
     
+    #
+    # Lists tasks, contexts, folders, goals.
+    #
     class ListCommand < CmdParse::Command
       
        def initialize(client)
@@ -15,6 +18,9 @@ module Toodledo
       end
     end
     
+    #
+    # Lists the tasks.
+    #
     class ListTasksCommand < BaseCommand
       def initialize(client)
         super(client, 'tasks', false)
@@ -33,6 +39,9 @@ module Toodledo
       end
     end
     
+    #
+    # List Contexts
+    #
     class ListContextsCommand < BaseCommand
       def initialize(client)
         super(client, 'contexts', false)
@@ -51,6 +60,9 @@ module Toodledo
       end
     end
     
+    #
+    # List Goals
+    #
     class ListGoalsCommand < BaseCommand
       def initialize(client)
         super(client, 'goals', false)
@@ -69,6 +81,9 @@ module Toodledo
       end
     end
     
+    #
+    # List Folders
+    #
     class ListFoldersCommand < BaseCommand
       def initialize(client)
         super(client, 'folders', false)
