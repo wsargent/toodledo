@@ -142,14 +142,6 @@ module Toodledo
         raise 'Must call connect() before this method'        
       end
 
-      # Break all the parameters down into key=value seperated by semi colons
-      stringified_params = (key != nil) ? ';key=' + key : ''
-
-      params.each { |k, v| 
-        stringified_params += ';' + k.to_s + '=' + escape_text(v) 
-      }
-      url = make_uri(method, stringified_params)
-
       # If it's been more than an hour, then ask for a new key.
       if (@key != nil && expired?)
         logger.debug("call(#{method}) connection expired, reconnecting...") if logger
@@ -159,7 +151,20 @@ module Toodledo
         proxy = @proxy
         disconnect() # ensures that key == nil, which is crucial to avoid an endless loop...
         connect(base_url, proxy)
+
+        # swap out the key (if any) before we start assembling the request
+        if (key != nil)
+          key = @key
+        end
       end
+
+      # Break all the parameters down into key=value seperated by semi colons
+      stringified_params = (key != nil) ? ';key=' + key : ''
+
+      params.each { |k, v| 
+        stringified_params += ';' + k.to_s + '=' + escape_text(v) 
+      }
+      url = make_uri(method, stringified_params)
 
       # Establish the proxy
       if (@proxy != nil)

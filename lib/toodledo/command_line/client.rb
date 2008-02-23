@@ -383,7 +383,7 @@ module Toodledo
       # The order of symbols does not matter, but the title must be the last thing
       # on the line.
       #
-      # add @[Deep Space] *Action $[For Great Justice] Take off every Zig
+      # add @[Deep Space] *Action ^[For Great Justice] Take off every Zig
       #
       # There is no priority handling in this method.  It may be added if there is
       # demand for it.
@@ -579,28 +579,28 @@ module Toodledo
       # Displays the help message.
       #
       def help()
-        puts "hotlist -- shows the hotlist\n"
+        puts "hotlist -- shows the hotlist"
         puts "tasks -- shows tasks ('tasks *Action @Home')"
         puts "list -- does the same as tasks"
         puts 
         puts "add -- adds a task ('add *Action @Home Eat breakfast')"
         puts "edit -- edits a task ('edit *Action 1134')"
-        puts "complete -- completes a task ('complete 1234')\n"
+        puts "complete -- completes a task ('complete 1234')"
         puts "delete -- deletes a task ('delete 1134')"
         puts
         puts "context -- defines a context filter on tasks"
         puts "goal -- defines a goal filter on tasks"
-        puts "folder -- defines a folder filter on tasks\n"
-        puts "priority -- defines a priority filter on tasks\n"
-        puts "unfilter -- removes all filters on tasks\n"
+        puts "folder -- defines a folder filter on tasks"
+        puts "priority -- defines a priority filter on tasks"
+        puts "unfilter -- removes all filters on tasks"
         puts
-        puts "folders -- shows all folders\n"
+        puts "folders -- shows all folders"
         puts "goals -- shows all goals"
         puts "contexts -- shows all contexts"
         puts
         puts "config -- displays the current configuration"
         puts
-        puts "help or ? -- displays this help message\n"
+        puts "help or ? -- displays this help message"
         puts "quit or exit -- Leaves the application"
       end
       
