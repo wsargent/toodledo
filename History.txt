@@ -1,13 +1,18 @@
+== 1.1.0 / 2008-02-24
 
-
-== 1.1.0
-
-* Change to non-interactive default to read from pipe or redirected files
-* Added formatters for the client so it's easier to tweak line output.
-* Add unit tests for client.
-* Change symbol for goals from $ to ^ (was confusing client when entering 'I owe $5')
+* Add functionality to add, delete goals, contexts, and folders from client.
+* Add functionality to archive folders.
+* Add stdin command to read from pipe or redirected files
+* Add formatters for the client so it's easier to tweak line output.
 * Add proper priority support to the client (in the format !top, !high, etc.) 
+* Make filter able to take symbols.
+* Change symbol for goals from $ to ^ (was confusing when entering 'I owe $5')
+* Add unit tests for client.
+* Better error messages and explanation of toodledo setup.
 * Fix the debug command so it doesn't crash the interactive client.
+* Fixed some bugs in date processing.
+* Fixed bugs in priority handling.
+* Fixed session invalid bug on reconnect.
 
 == 1.0.2 / 2008-02-14
 

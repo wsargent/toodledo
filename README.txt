@@ -29,7 +29,7 @@ tasks with a BetaBrite?  It can all happen.
 
 === SETUP:
 
-The first thing you should do is open up your browser and go to 
+The first thing you should do is open up your browser and go to:
 
   http://www.toodledo.com/info/api_doc.php
 
@@ -69,7 +69,7 @@ Let's use the command line client to list only the tasks you have in the office:
 
 Now let's add a task with several symbols:
 
-  toodledo add '*Action @Programming ^[Write Toodledo Ruby API] Write documentation'
+  toodledo add '*Action @Programming ^[Write Toodledo Ruby API] Write docs'
 
 You can also edit tasks, using the task id.  This sets the folder to Someday:
 
@@ -82,7 +82,8 @@ And finally you can complete or delete tasks, again using the task id.
 
 === INTERACTIVE MODE:
 
-Toodledo also comes with an interactive mode:
+Toodledo also comes with an interactive mode that is used if no arguments are 
+found:
 
   toodledo 
   > add This is a test
@@ -130,7 +131,7 @@ this instead:
 
 * sudo gem install toodledo
 * toodledo setup (sets up the YAML file with your credentials)
-* toodledo interactive
+* toodledo
 
 == LICENSE:
 		   GNU LESSER GENERAL PUBLIC LICENSE
