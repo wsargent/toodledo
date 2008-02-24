@@ -16,15 +16,10 @@ module Toodledo
         @session = flexmock('session')
       end
 
-      def test_set_priority_filter()
+      def test_set_filter()
         # We don't want an error message printed out here.
         @client.should_receive(:print).never
-        @client.set_priority_filter(@session, 'top')
-      end
-
-      def test_set_priority_filter_with_invalid_options()
-        @client.should_receive(:print).with('Unknown priority "foo" -- (priority must be one of top, high, medium, low, or negative)')
-        @client.set_priority_filter(@session, 'foo')
+        @client.set_filter(@session, '!top')
       end
       
       def test_add_task_with_no_args()
@@ -181,9 +176,7 @@ module Toodledo
         input = 'life'
         @client.list_goals(@session, input)
       end
-      
-      def test_list_goal()
-      
+        
       def test_list_folders()
         folders = [ Folder.new(1234, 0, 0, 'Name') ]
         @session.should_receive(:get_folders).and_return(folders)
@@ -191,6 +184,13 @@ module Toodledo
         
         input = ''
         @client.list_folders(@session, input)
+      end
+      
+      def test_archive_folder()
+        
+        
+        input = '234'
+        @client.archive_folder(@session, input)
       end
       
     end

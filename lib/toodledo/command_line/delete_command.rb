@@ -75,7 +75,7 @@ module Toodledo
     
     class DeleteTaskCommand < BaseCommand
       def initialize(client)
-        super(client, 'task', false)
+        super(client, 'delete', false)
         self.short_desc = "Deletes a task"
         self.description = "Deletes a task from Toodledo."
       end

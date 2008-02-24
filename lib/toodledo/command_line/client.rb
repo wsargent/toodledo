@@ -10,14 +10,26 @@ require 'toodledo/command_line/parser_helper'
 require 'toodledo/command_line/base_command'
 require 'toodledo/command_line/interactive_command'
 require 'toodledo/command_line/stdin_command'
-require 'toodledo/command_line/add_command'
-require 'toodledo/command_line/list_command'
-require 'toodledo/command_line/edit_command'
-require 'toodledo/command_line/hotlist_command'
-require 'toodledo/command_line/complete_command'
-require 'toodledo/command_line/delete_command'
 require 'toodledo/command_line/setup_command'
 
+# CREATE
+require 'toodledo/command_line/add_command'
+
+# READ
+require 'toodledo/command_line/hotlist_command'
+require 'toodledo/command_line/list_tasks_command'
+require 'toodledo/command_line/list_folders_command'
+require 'toodledo/command_line/list_contexts_command'
+require 'toodledo/command_line/list_goals_command'
+
+# UPDATE
+require 'toodledo/command_line/edit_command'
+require 'toodledo/command_line/complete_command'
+
+# DELETE
+require 'toodledo/command_line/delete_command'
+
+# FORMATTERS
 require 'toodledo/command_line/task_formatter'
 require 'toodledo/command_line/context_formatter'
 require 'toodledo/command_line/folder_formatter'
@@ -111,102 +123,66 @@ module Toodledo
       # Sets the context filter.  Subsequent calls to show tasks
       # will only show tasks that have this context.
       # 
-      def set_context_filter(session, input)
-        if (input == nil)
-          input = ask("Selected context? > ") { |q| q.readline = true }
-        end
+      def set_filter(session, input)
+        logger.debug("set_filter(#{input})")
         
         input.strip!
         
-        if (input =~ /^(\d+)$/)
-          context = session.get_context_by_id(input)
-          if (context != nil)
-            @filters[:context] = context.name
-          else
-            @filters[:context] = input
-          end    
-        else
-          @filters[:context] = input
+        context = parse_context(input)
+        if (context != nil)
+          c = session.get_context_by_name(context)
+          if (c == nil)
+            print "No such context: #{context}"
+            return
+          end
+          @filters[:context] = c
+        end
+        
+        goal = parse_goal(input)
+        if (goal != nil)
+          g = session.get_goal_by_name(goal)
+          if (g == nil)
+            print "No such goal: #{goal}"
+            return
+          end
+          @filters[:goal] = g
+        end
+        
+        folder = parse_folder(input)
+        if (folder != nil)
+          f = session.get_folder_by_name(folder)
+          if (f == nil)
+            print "No such folder: #{folder}"
+          end
+          @filters[:folder] = f
+        end
+        
+        priority = parse_priority(input)
+        if (priority != nil)
+          @filters[:priority] = priority
+        end
+        
+        if (logger)
+          logger.debug("@filters = #{@filters.inspect}")
         end
       end 
-      
-      #
-      # Sets the folder filter.  Subsequent calls to show tasks
-      # will only show tasks that are in this folder.
-      #
-      def set_folder_filter(session, input)
-        if (input == nil)
-          input = ask("Selected folder? > ") { |q| q.readline = true }
-        end
-        
-        input.strip!
-        
-        if (input =~ /^(\d+)$/)
-          folder = session.get_folder_by_id(input)
-          if (folder != nil)
-            @filters[:folder] = folder.name
-          else
-            @filters[:folder] = input
-          end    
-        else
-          @filters[:folder] = input
-        end
-      end
-      
-      # Sets the goal filter.  Subsequent calls to show tasks
-      # will only show tasks that have this goal.
-      #
-      def set_goal_filter(session, input)
-        if (input == nil)
-          input = ask("Selected goal? > ") { |q| q.readline = true }
-        end
-      
-        input.strip!
-        
-        if (input =~ /^(\d+)$/)
-          goal = session.get_goal_by_id(input)
-          if (goal != nil)
-            @filters[:goal] = goal.name
-          else
-            @filters[:goal] = input
-          end    
-        else
-          @filters[:goal] = input
-        end
-      end
-      
-      # Sets the priority filter.
-      def set_priority_filter(session, input)
-        if (input == nil)
-          input = ask("Selected priority? > ") { |q| q.readline = true }  
-        end
-        
-        input.strip!
-        
-        if (input =~ /^(\d+)$/)
-          value = input.to_i
-        else
-          value = parse_priority('!' + input.downcase)
-        end
-        
-        if (! Priority.valid?(value))
-          print "Unknown priority \"#{input}\" -- (priority must be one of top, high, medium, low, or negative)"
-        end
-        
-        @filters[:priority] = value
-      end
       
       #
       # Shows all the filters.
       #
       def list_filters()        
-        if (@filters.empty?)
+        if (@filters == nil || @filters.empty?)
           print "No filters."
           return
         end
         
         @filters.each do |k, v|
-          print "#{k}: #{v}\n"
+          if (v.respond_to? :name)
+            name = v.name
+          else
+            name = v
+          end
+          print "#{k}: #{name}\n"
         end
       end
       
@@ -431,10 +407,19 @@ module Toodledo
       end
       
       def add_goal(session, input)
+        input.strip!
         
-        title = input.strip
+        # Assume that a goal is short, medium or life, and
+        # don't stick a symbol on it.
+        level = parse_level(input)
+        if (level == nil)
+          level = Toodledo::Goal::SHORT_LEVEL
+        else
+          input = clean(LEVEL_REGEXP, input)
+          input.strip!
+        end
         
-        goal_id = session.add_goal(title)
+        goal_id = session.add_goal(input, level)
         
         print "Goal #{goal_id} added."
       end
@@ -446,6 +431,24 @@ module Toodledo
         folder_id = session.add_folder(title)
         
         print "Folder #{folder_id} added."
+      end
+      
+      #
+      # Archives a folder.
+      #
+      def archive_folder(session, line)
+        
+        line.strip!
+        
+        folder_id = line
+        params = { :archived => 1 }
+        session.edit_folder(folder_id, params)
+        
+        print "Folder #{folder_id} archived."
+      end
+      
+      def archive_goal(session, line)
+        # Not implemented!  No way to edit a goal.
       end
       
       #
@@ -514,6 +517,7 @@ module Toodledo
         end
       end
       
+      
       # Deletes a task, using the task id. 
       #
       # delete 123 
@@ -571,37 +575,42 @@ module Toodledo
       end
         
       # Prints out a single line.
-      def print(line)        
-        say line
+      def print(line = nil)
+        if (line == nil)
+          puts
+        else
+          puts line
+        end
       end
       
       #
       # Displays the help message.
       #
       def help()
-        puts "hotlist -- shows the hotlist"
-        puts "tasks -- shows tasks ('tasks *Action @Home')"
-        puts "list -- does the same as tasks"
-        puts 
-        puts "add -- adds a task ('add *Action @Home Eat breakfast')"
-        puts "edit -- edits a task ('edit *Action 1134')"
-        puts "complete -- completes a task ('complete 1234')"
-        puts "delete -- deletes a task ('delete 1134')"
-        puts
-        puts "context -- defines a context filter on tasks"
-        puts "goal -- defines a goal filter on tasks"
-        puts "folder -- defines a folder filter on tasks"
-        puts "priority -- defines a priority filter on tasks"
-        puts "unfilter -- removes all filters on tasks"
-        puts
-        puts "folders -- shows all folders"
-        puts "goals -- shows all goals"
-        puts "contexts -- shows all contexts"
-        puts
-        puts "config -- displays the current configuration"
-        puts
-        puts "help or ? -- displays this help message"
-        puts "quit or exit -- Leaves the application"
+        print "hotlist      Shows the hotlist"
+        print "folders      Shows all folders"
+        print "goals        Shows all goals"
+        print "contexts     Shows all contexts"
+        print "tasks        Shows tasks ('tasks *Action @Home')"
+        print 
+        print "add          Adds task ('add *Action @Home Eat breakfast')"
+        print "  folder     Adds a folder ('add folder MyFolder')"
+        print "  context    Adds a context ('add context MyContext')"
+        print "  goal       Adds a goal ('add goal MyGoal')"
+        print "edit         Edits a task ('edit *Action 1134')"
+        print "complete     Completes a task ('complete 1234')"
+        print "delete       Deletes a task ('delete 1134')"
+        print "  folder     Deletes a folder ('delete folder 1')"
+        print "  context    Deletes a context ('delete context 2')"
+        print "  goal       Deletes a goal ('delete goal 3')"
+        print 
+        print "archive      Archives a folder ('archive 1234')"
+        print "filter       Defines filters ('filter *Action @Someday')"
+        print "unfilter     Removes all filters"
+        print "filters      Displays the list of filters"
+        print
+        print "help or ?    Displays this help message"
+        print "quit or exit Leaves the application"
       end
       
       def clean(regexp, input)
@@ -615,7 +624,17 @@ module Toodledo
           
           when /^add/
           line = clean(/^add/, input)
-          add_task(session, line)
+          line.strip!
+          case line
+          when /folder/
+            add_folder(session, clean(/folder/, line))
+          when /context/
+            add_context(session, clean(/context/, line))
+          when /goal/
+            add_goal(session, clean(/goal/, line))
+          else
+            add_task(session, line)
+          end
           
           when /^edit/
           line = clean(/^edit/, input)
@@ -623,7 +642,20 @@ module Toodledo
           
           when /^delete/
           line = clean(/^delete/, input)
-          delete_task(session, line)
+          line.strip!
+          case line
+          when /folder/
+            delete_folder(session, clean(/folder/, line))
+          when /context/
+            delete_context(session, clean(/context/, line))
+          when /goal/
+            delete_goal(session, clean(/goal/, line))
+          else
+            delete_task(session, line)            
+          end
+          
+          when /^archive/
+          archive_folder(session, clean(/^archive/, input))
           
           when /^hotlist/
           line = clean(/^hotlist/, input)
@@ -633,8 +665,8 @@ module Toodledo
           line = clean(/^complete/, input)
           complete_task(session, line)
           
-          when /^tasks/, /^list/
-          line = clean(/^(tasks|list)/, input)
+          when /^tasks/
+          line = clean(/^(tasks)/, input)
           list_tasks(session, line)
           
           when /^folders/
@@ -649,27 +681,15 @@ module Toodledo
           line = clean(/^contexts/, input)
           list_contexts(session,line)
           
-          when /^context/
-          line = clean(/^context/, input)
-          set_context_filter(session, line)
+          when /^filters/
+          list_filters()
           
-          when /^folder/
-          line = clean(/^folder/, input)
-          set_folder_filter(session, line)
-          
-          when /^goal/
-          line = clean(/^goal/, input)
-          set_goal_filter(session, line)
-          
-          when /^priority/
-          line = clean(/^priority/, input)
-          set_priority_filter(session, line)
+          when /^filter/
+          line = clean(/^filter/, input)
+          set_filter(session, line)
           
           when /^config/
           show_config(session)
-          
-          when /^filters/
-          list_filters()
           
           when /^unfilter/
           unfilter()
@@ -712,11 +732,16 @@ module Toodledo
         
         cmd.add_command(StdinCommand.new(self))
         
-        cmd.add_command(AddCommand.new(self))
-        cmd.add_command(ListCommand.new(self))
+        cmd.add_command(AddTaskCommand.new(self))
+        
+        cmd.add_command(ListTasksCommand.new(self))
+        cmd.add_command(ListFoldersCommand.new(self))
+        cmd.add_command(ListGoalsCommand.new(self))
+        cmd.add_command(ListContextsCommand.new(self))
+        
         cmd.add_command(EditCommand.new(self))
         cmd.add_command(CompleteCommand.new(self))
-        cmd.add_command(DeleteCommand.new(self))
+        cmd.add_command(DeleteTaskCommand.new(self))
         cmd.add_command(HotlistCommand.new(self))
         cmd.add_command(SetupCommand.new(self))
                 
@@ -727,6 +752,14 @@ module Toodledo
         
         # Return a good exit status.
         return 0      
+      rescue InvalidConfigurationError => e
+        logger.debug(e)
+        print "The client is missing (or cannot use) the user id or password it needs to connect."
+        print "Run 'toodledo setup' and save the file to fix this."
+        return -1
+      rescue ServerError => e
+        print "The server returned a fatal error: #{e.message}"
+        return -1
       end      
     end #class    
   end  

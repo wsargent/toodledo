@@ -11,9 +11,14 @@ module Toodledo
         self.short_desc = 'Adds an object'
         
         self.add_command(AddTaskCommand.new(client), true)
-        self.add_command(AddFolderCommand.new(client))
-        self.add_command(AddGoalCommand.new(client))
-        self.add_command(AddContextCommand.new(client))
+        #self.add_command(AddFolderCommand.new(client))
+        #self.add_command(AddGoalCommand.new(client))
+        #self.add_command(AddContextCommand.new(client))
+        
+      end
+      
+      def execute(args)
+        puts "hello world!"
       end
     end
     
@@ -102,7 +107,7 @@ module Toodledo
     class AddTaskCommand < BaseCommand
       
       def initialize(client)
-        super(client, 'task', false)
+        super(client, 'add', false)
         self.short_desc = "Add a task"
         self.description = "Adds a task to Toodledo"
       end

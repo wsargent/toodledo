@@ -13,8 +13,9 @@ The client allows you to work with Toodledo from the command line. It will
 work in either interactive or command line mode.
 
 You can also use the client in your shell scripts, or use the API directly
-as part of a web application.  Want an RSS feed?  Want to have the Mac read
-out your top priority?  It can all happen.
+as part of a web application.  Custom private RSS feed?  Want to have the Mac 
+read out your top priority?  Input tasks through Quicksilver?  Print out
+tasks with a BetaBrite?  It can all happen.
 
 == FEATURES/PROBLEMS:
 
@@ -26,26 +27,41 @@ out your top priority?  It can all happen.
 
 == SYNOPSIS:
 
+=== SETUP:
+
+The first thing you should do is open up your browser and go to 
+
+  http://www.toodledo.com/info/api_doc.php
+
+and retrieve your userid.  You will need this for setup.
+
+Then, install toodledo.  This is either 'gem install toodledo' or 
+'sudo gem install toodledo' depending on your platform.
+
+Then, type 'toodledo setup' and enter your userid and password in
+the spaces provided.  Then save the file, and you're good to go.
+
 === COMMAND LINE:
  
 You can add tasks.  The simplest form is here:
 
   toodledo add 'This is a test'
   
-But that's not all you can do.  Toodledo has a particularly rich  model of 
-a task, and allows full GTD  type state to be attached to them.  The syntax 
+But tasks don't have to be simple.  Toodledo has a particularly rich model of 
+a task, and allows full GTD type state to be attached to them.  The syntax 
 for the client is as follows:
 
   *Folder
   @Context
   ^Goal
+  !Priority
 
-You can encase the symbol with square brackets if there is a space
-involved:
+You can encase the symbol with square brackets if there is a space involved:
 
   *[Blue Sky]
   @[Someday / Maybe]
   ^[Write Toodledo Ruby API]
+  !top
   
 Let's use the command line client to list only the tasks you have in the office:
 
@@ -64,29 +80,25 @@ And finally you can complete or delete tasks, again using the task id.
   toodledo complete 15934131
   toodledo delete 15934131
 
-=== INTERACTIVE CLIENT:
+=== INTERACTIVE MODE:
 
-Toodledo also comes with an interactive client:
+Toodledo also comes with an interactive mode:
 
-  toodledo interactive
+  toodledo 
   > add This is a test
   
 You can type help at the prompt for a complete list of commands.  The client 
 makes for a nice way to enter in tasks as you think of them.
 
-The client will also allow you to set up filters.  If you type 'folder', 
-'context' or 'goal' with an argument, then only tasks that match those 
-criteria will be displayed.  That is, if you do this:
+The client will also allow you to set up filters.  Filters are added with
+the symbols, so in interactive mode
 
-  context Office
-  folder Action
+  filter @Office *Action
   list
 
 Then it produces the same results as:
 
-  toodledo list 'Office *Action'
-  
-Although the following
+  toodledo list '@Office *Action'
 
 Finally, if you want to write your own scripts, working with Toodledo is very
 simple, since it will use the YAML config file:

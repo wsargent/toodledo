@@ -39,10 +39,10 @@ module Toodledo
     attr_reader :base_url, :user_id, :proxy
 
     # Creates a new session, using the given user name and password.
-    # throws exception if user_id or password are nil.
+    # throws InvalidConfigurationError if user_id or password are nil.
     def initialize(user_id, password, logger = nil)
-      raise "Nil user_id" if (user_id == nil)
-      raise "Nil password" if (password == nil)
+      raise InvalidConfigurationError.new("Nil user_id") if (user_id == nil)
+      raise InvalidConfigurationError.new("Nil password") if (password == nil)
     
       @user_id = user_id
       @password = password
@@ -74,11 +74,11 @@ module Toodledo
       # logger.debug("user_id = #{@user_id}, #{@email} #{@password}")
 
       if (@user_id == '1')
-        raise "No matching user_id found"
+        raise InvalidConfigurationError.new("Invalid user_id")
       end
       
       if (@user_id == '0')
-        raise "Server says we have a blank email or password"
+        raise InvalidConfigurationError.new("Invalid password")
       end
       
       # Set the base URL.
@@ -222,7 +222,7 @@ module Toodledo
 
     # Gets the token method, given the id.
     def get_token(user_id)
-      raise "Nil user_id" if (user_id == nil)
+      raise "Nil user_id" if (user_id == nil || user_id.empty?)
 
       params = { :userid => user_id }
       result = call('getToken', params)    
