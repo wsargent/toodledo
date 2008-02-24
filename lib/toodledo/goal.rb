@@ -26,6 +26,7 @@ module Toodledo
       @id = id
       @level = level
       @contributes_id = contributes_id
+      @contributes = nil
       @name = name
     end
     
@@ -59,7 +60,7 @@ module Toodledo
     end
     
     def to_xml()
-      return "<goal id=\"#{@id}\" level=\"#{@level}\" contributes=\"#{@contributes.server_id}\" name=\"#{@name}\">"
+      return "<goal id=\"#{@id}\" level=\"#{@level}\" contributes=\"#{@contributes_id}\" name=\"#{@name}\">"
     end
     
   end

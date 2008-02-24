@@ -96,12 +96,36 @@ class ParserHelperTest < Test::Unit::TestCase
     assert_equal(Priority::LOW, priority, "Value not found")
   end
   
-  def test_find_priority_with_low
+  def test_find_priority_with_negative
     input = "!negative I am negative priority."
        
     priority = parse_priority(input)
        
     assert_equal(Priority::NEGATIVE, priority, "Value not found")
+  end
+  
+  def test_find_level_with_life()
+    
+    input = 'life This is my goal'
+    level = parse_level(input)
+    
+    assert_equal(Goal::LIFE_LEVEL, level, 'level not found')
+  end
+  
+  def test_find_level_with_medium()
+    
+    input = 'medium This is my goal'
+    level = parse_level(input)
+    
+    assert_equal(Goal::MEDIUM_LEVEL, level, 'level not found')
+  end
+  
+  def test_find_level_with_short()
+    
+    input = 'short This is my goal'
+    level = parse_level(input)
+    
+    assert_equal(Goal::SHORT_LEVEL, level, 'level not found')
   end
   
 end

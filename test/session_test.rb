@@ -90,7 +90,7 @@ class SessionTest < Test::Unit::TestCase
     assert myhash[:context] == context_id
   end
   
-  def test_handle_boolean_with_string()
+  def test_handle_boolean_with_string_true()
     myhash = {}
     params = { :bool => 'true' }
     @session.handle_boolean(myhash, params, :bool)
@@ -98,7 +98,7 @@ class SessionTest < Test::Unit::TestCase
     assert myhash[:bool] == "1"
   end
   
-  def test_handle_boolean_with_string()
+  def test_handle_boolean_with_string_false()
     myhash = {}
     params = { :bool => 'false' }
     @session.handle_boolean(myhash, params, :bool)

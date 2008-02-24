@@ -103,7 +103,8 @@ module Toodledo
         input = 'name'
         
         id = '1234'
-        @session.should_receive(:add_goal).with(input).and_return(id)
+        level = Goal::SHORT_LEVEL
+        @session.should_receive(:add_goal).with(input, level).and_return(id)
         @client.should_receive(:print).with('Goal 1234 added.')
         
         @client.add_goal(@session, input)
@@ -167,15 +168,6 @@ module Toodledo
         input = ''
         @client.list_goals(@session, input)
       end
-      
-      def test_list_goals()
-        goals = [ Goal.new(1234, Goal::LIFE_LEVEL, 0, 'Name') ]
-        @session.should_receive(:get_goals).and_return(goals)
-        @client.should_receive(:print).with('<1234> -- life ^[Name]')
-        
-        input = 'life'
-        @client.list_goals(@session, input)
-      end
         
       def test_list_folders()
         folders = [ Folder.new(1234, 0, 0, 'Name') ]
@@ -188,6 +180,8 @@ module Toodledo
       
       def test_archive_folder()
         
+        @session.should_receive(:edit_folder).and_return(true)
+        @client.should_receive(:print).with('Folder 234 archived.')
         
         input = '234'
         @client.archive_folder(@session, input)
