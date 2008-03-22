@@ -1,3 +1,13 @@
+== 1.1.2 / 2008-03-22
+
+* Added get_session_info()
+* Added get_account_info()
+* Added get_task_by_id() and make task a little smarter about parents / subtasks.
+
+== 1.1.1 / 2008-03-01 (ish)
+
+* Rake manifest was bad.  Rereleasing.
+
 == 1.1.0 / 2008-02-24
 
 * Add functionality to add, delete goals, contexts, and folders from client.
