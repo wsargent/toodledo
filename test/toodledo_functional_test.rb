@@ -22,7 +22,10 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     # proxy = { 'host' => '127.0.0.1', 'port' => '8080'}
     proxy = nil
     
-    @session = Session.new(@user_id, @password)
+    logger = Logger.new(STDOUT)
+    logger.level = Logger::ERROR
+    
+    @session = Session.new(@user_id, @password, logger)
     @session.connect(base_url, proxy)
   end
   
@@ -31,11 +34,11 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
   end
   
   # Always fails.
-  # def test_get_user_id()
+  #def test_get_user_id()
   #  user_id = @session.get_user_id(@email, @password)
   #     
-  #  # assert user_id == @user_id
-  # end
+  #  assert user_id == @user_id
+  #end
   
   def test_add_edit_and_remove_task
     title = 'test_add_task'
@@ -129,6 +132,27 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     
     folders = @session.get_folders()
     assert folders.length == 0
+  end
+  
+  def test_get_server_info()
+    info_hash = @session.get_server_info()
+    
+    assert info_hash[:unixtime] != nil
+    assert info_hash[:date] != nil
+    assert info_hash[:tokenexpires] != nil
+  end
+  
+  def test_get_account_info()
+    info_hash = @session.get_account_info()
+    
+    assert info_hash[:userid] == @user_id
+    assert info_hash[:alias] == 'will.sargent+toodledo_rub'
+    assert info_hash[:pro] == false
+    assert info_hash[:dateformat] == 0
+    assert info_hash[:timezone] == 0
+    assert info_hash[:hidemonths] == 6
+    assert info_hash[:hotlistpriority] == 3
+    assert info_hash[:hotlistduedate] == 14   
   end
   
   #

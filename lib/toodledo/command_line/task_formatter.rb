@@ -35,7 +35,7 @@ module Toodledo
         end
         
         if (task.parent_id != nil)
-          msg += " parent[#{task.parent_id}]"
+          msg += " parent[#{task.parent.title}]"
         end
   
         if (task.length != nil)
@@ -46,7 +46,10 @@ module Toodledo
           msg += " timer[#{task.timer}]"
         end
         
-        # Use the highline color library
+        if (task.num_children != nil)
+          msg += " children[#{task.num_children}]"
+        end
+        
         msg += " #{task.title}"
               
         if (task.note != nil)

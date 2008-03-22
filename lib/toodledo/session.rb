@@ -244,7 +244,63 @@ module Toodledo
       result = call('getUserid', params)  
       return result.text
     end
-
+   
+    #
+    # Returns the information associated with this account.
+    # 
+    #   pro : Whether or not the user is a Pro member. You need to know this if you want to use subtasks.
+    #   dateformat : The user's prefered format for representing dates. (0=M D, Y, 1=M/D/Y, 2=D/M/Y, 3=Y-M-D)
+    #   timezone : The number of half hours that the user's timezone is offset from the server's timezone. A value of -4 means that the user's timezone is 2 hours earlier than the server's timezone.
+    #   hidemonths : If the task is due this many months into the future, the user wants them to be hidden.
+    #   hotlistpriority : The priority value above which tasks should appear on the hotlist.
+    #   hotlistduedate : The due date lead-time by which tasks should will appear on the hotlist.
+    def get_account_info()
+      result = call('getAccountInfo', {}, @key)
+      
+      pro = (result.elements['pro'].text.to_i == 1) ? true : false
+      
+      hash = {
+        :userid => result.elements['userid'].text,
+        :alias => result.elements['alias'].text,
+        :pro => pro,
+        :dateformat => result.elements['dateformat'].text.to_i,
+        :timezone => result.elements['timezone'].text.to_i,
+        :hidemonths => result.elements['hidemonths'].text.to_i,
+        :hotlistpriority => result.elements['hotlistpriority'].text.to_i,
+        :hotlistduedate => result.elements['hotlistduedate'].text.to_i
+      }
+      
+      return hash
+    end
+    
+    #
+    # The "getServerInfo" API call will return some information about the server and your current API session.
+    # 
+    #  unixtime: the time since epoch of the server.
+    #  date: the date of the server.
+    #  tokenexpires: how long in minutes before the current token expires. 
+    #
+    def get_server_info()
+      result = call('getServerInfo', {}, @key)
+      
+      # <server>
+      #<unixtime>1204569838</unixtime>
+      #<date>Mon,  3 Mar 2008 12:43:58 -0600</date>
+      #<tokenexpires>45.4</tokenexpires>
+      #</server>
+      
+      unixtime = result.elements['unixtime'].text.to_i
+      server_date = Time.at(unixtime)
+      token_expires = result.elements['tokenexpires'].text.to_i
+      hash = {
+        :unixtime => unixtime,
+        :date => server_date,
+        :tokenexpires => token_expires
+      }
+      
+      return hash
+    end
+    
     ############################################################################
     # Tasks
     ############################################################################
@@ -353,6 +409,17 @@ module Toodledo
         tasks << task
       end
       return tasks
+    end
+    
+    #
+    # Gets a single task by its id, and returns the task.
+    #
+    def get_task_by_id(id)
+      result = call('getTasks', {:id => id}, @key)
+      result.elements.each do |el| 
+        task = Task.parse(self, el)
+        return task
+      end
     end
   
     # Adds a task to Toodledo.

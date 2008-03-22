@@ -16,12 +16,12 @@ lib/toodledo/command_line/goal_formatter.rb
 lib/toodledo/command_line/hotlist_command.rb
 lib/toodledo/command_line/interactive_command.rb
 lib/toodledo/command_line/list_tasks_command.rb
+lib/toodledo/command_line/list_contexts_command.rb
 lib/toodledo/command_line/list_folders_command.rb
 lib/toodledo/command_line/list_goals_command.rb
-lib/toodledo/command_line/list_tasks_command.rb
 lib/toodledo/command_line/parser_helper.rb
 lib/toodledo/command_line/setup_command.rb
-lib/toodledo/command_line/sTdin_command.rb
+lib/toodledo/command_line/stdin_command.rb
 lib/toodledo/command_line/task_formatter.rb
 lib/toodledo/context.rb
 lib/toodledo/folder.rb

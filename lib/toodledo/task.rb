@@ -22,8 +22,8 @@ module Toodledo
     # Indicates that the task's duedate is optional. See
     # http://www.toodledo.com/info/help.php?sel=42
     OPTIONAL = '?'
-
-    attr_reader :parent_id, :children, :title, :tag
+    
+    attr_reader :parent_id, :parent, :title, :tag
     attr_reader :added, :modified, :completed
     attr_reader :duedate, :duedatemodifier
     attr_reader :repeat, :priority, :length, :timer, :note
@@ -43,6 +43,10 @@ module Toodledo
     def goal
       return @goal
     end
+    
+    def num_children
+      return @num_children
+    end
 
     def initialize(id, params = {})
       @id = id
@@ -50,8 +54,9 @@ module Toodledo
       @title = params[:title]
       @tag = params[:tag]
 
-      @parent_id = params[:parent]
-      @children = params[:children]
+      @parent_id = params[:parent_id]
+      @parent = params[:parent]
+      @num_children = params[:num_children]
 
       # The folder, context and goals are parsed out from get_tasks() call into
       # the appropriate object.
@@ -81,7 +86,7 @@ module Toodledo
     end
 
     def is_parent?
-      return ! (@children == nil || @children == 0)
+      return ! (@num_children == nil || @num_children == 0)
     end
 
     # Parses a task element and returns a new Task.
@@ -164,15 +169,21 @@ module Toodledo
       priority = el.elements['priority'].text.to_i
 
       # Only set a parent if it's not the 'empty parent'.
-      parent_id = el.elements['parent'].text
-      if parent_id == '0'
+      parent_id_el = el.elements['parent']
+      if (parent_id_el != nil)
+        parent_id = parent_id_el.text
+        if parent_id == '0'
+          parent_id = nil
+        else
+          parent_id = parent_id.to_i
+          parent = session.get_task_by_id(parent_id)
+        end
+      else 
         parent_id = nil
-      else
-        parent_id = parent_id.to_i
       end
-
+      
       # This is actually the NUMBER of children.  Two children returns 2.
-      children = el.elements['children'].text.to_i
+      num_children = el.elements['children'].text.to_i
       
       title = el.elements['title'].text
       
@@ -189,8 +200,9 @@ module Toodledo
       note = nil if (note == '0')
       
       params = {
-        :parent => parent_id,
-        :children => children,
+        :parent_id => parent_id,
+        :parent => parent,
+        :num_children => num_children,
         :title => title,
         :tag => tag,
         :folder => folder,
