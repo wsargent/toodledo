@@ -89,6 +89,27 @@ module Toodledo
       return ! (@num_children == nil || @num_children == 0)
     end
 
+    # Returns a hash containing :id and :stamp, a timestamp showing when the task was deleted.
+    #
+    # <task>
+    #  <id>12345</id>
+    #  <stamp>2008-02-25 07:46:42</stamp>
+    #  </task>
+    #  <task>
+    #  <id>67890</id>
+    #  <stamp>2008-03-12 14:11:12</stamp>
+    #  </task>
+    #  
+    def self.parse_deleted(session, el)      
+      id = el.elements['id'].text
+      stamp = el.elements['stamp'].text
+
+      fmt = Session::DATETIME_FORMAT
+      deleted_stamp = DateTime.strptime(stamp, fmt)
+      
+      return { :id => id, :stamp => deleted_stamp }
+    end
+
     # Parses a task element and returns a new Task.
     def self.parse(session, el)
 

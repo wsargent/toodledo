@@ -1,3 +1,8 @@
+== 1.2.0 / 2008-04-19
+
+* Added get_deleted() method
+* Added lastaddedit and lastdeleted to get_account_info()
+
 == 1.1.2 / 2008-03-22
 
 * Added get_session_info()

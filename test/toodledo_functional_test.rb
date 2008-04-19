@@ -23,7 +23,7 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     proxy = nil
     
     logger = Logger.new(STDOUT)
-    logger.level = Logger::ERROR
+    logger.level = Logger::DEBUG
     
     @session = Session.new(@user_id, @password, logger)
     @session.connect(base_url, proxy)
@@ -153,6 +153,19 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     assert info_hash[:hidemonths] == 6
     assert info_hash[:hotlistpriority] == 3
     assert info_hash[:hotlistduedate] == 14   
+    
+    # Doesn't seem to work.
+    # assert info_hash[:lastaddedit] != nil
+    assert info_hash[:lastdelete] != nil
+  end
+  
+  def test_get_deleted()
+    deleted_tasks = @session.get_deleted(Time.at(0))
+    
+    deleted_tasks.each { |deleted_hash|
+      assert deleted_hash[:id] != nil
+      assert deleted_hash[:stamp] != nil
+    }
   end
   
   #

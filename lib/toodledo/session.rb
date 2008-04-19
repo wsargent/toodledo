@@ -254,10 +254,31 @@ module Toodledo
     #   hidemonths : If the task is due this many months into the future, the user wants them to be hidden.
     #   hotlistpriority : The priority value above which tasks should appear on the hotlist.
     #   hotlistduedate : The due date lead-time by which tasks should will appear on the hotlist.
+    #   lastaddedit: last time this was edited 
+    #   lastdelete: 
     def get_account_info()
       result = call('getAccountInfo', {}, @key)
       
       pro = (result.elements['pro'].text.to_i == 1) ? true : false
+      
+      #<lastaddedit>2008-01-24 12:26:45</lastaddedit>
+      #<lastdelete>2008-01-23 15:45:55</lastdelete>
+      fmt = DATETIME_FORMAT
+      
+      lastaddedit = result.elements['lastaddedit'].text
+      if (lastaddedit != nil)
+        last_modified_date = DateTime.strptime(lastaddedit, fmt)
+      else
+        last_modified_date = nil
+      end
+      
+      lastdelete = result.elements['lastdelete'].text      
+      if (lastdelete != nil)
+        logger.debug("lastdelete = #{lastdelete}")
+        last_deleted_date = DateTime.strptime(lastdelete, fmt)
+      else
+        last_deleted_date = nil
+      end
       
       hash = {
         :userid => result.elements['userid'].text,
@@ -267,7 +288,9 @@ module Toodledo
         :timezone => result.elements['timezone'].text.to_i,
         :hidemonths => result.elements['hidemonths'].text.to_i,
         :hotlistpriority => result.elements['hotlistpriority'].text.to_i,
-        :hotlistduedate => result.elements['hotlistduedate'].text.to_i
+        :hotlistduedate => result.elements['hotlistduedate'].text.to_i,
+        :lastaddedit => last_modified_date,
+        :lastdelete => last_deleted_date
       }
       
       return hash
@@ -550,6 +573,24 @@ module Toodledo
     
       return (result.text == '1')    
     end    
+    
+    #
+    # Returns deleted tasks.
+    #
+    #   after: a datetime object that indicates the start date after which deletes should be shown.
+    #
+    def get_deleted(after )
+      logger.debug("get_deleted(#{after})") if logger
+      
+      formatted_after = after.strftime(Session::DATETIME_FORMAT)
+      result = call('getDeleted', { :after => formatted_after }, @key)
+      deleted_tasks = []
+      result.elements.each do |el| 
+        deleted_task = Task.parse_deleted(self, el)
+        deleted_tasks << deleted_task
+      end
+      return deleted_tasks
+    end
 
     ############################################################################
     # Contexts
