@@ -46,7 +46,7 @@ module Toodledo
           msg += " timer[#{task.timer}]"
         end
         
-        if (task.num_children != nil)
+        if (task.num_children != nil && task.num_children > 0)
           msg += " children[#{task.num_children}]"
         end
         
