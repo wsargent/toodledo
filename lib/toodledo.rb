@@ -5,7 +5,7 @@
 module Toodledo
 
   # Required for gem  
-  VERSION = '1.2.0'
+  VERSION = '1.2.1'
   
   # Returns the configuration object.
   def self.get_config()
@@ -24,11 +24,21 @@ module Toodledo
   # 
   # The following will do most everything you want, assuming you've set
   # the config correctly:
-  #   
-  #   require 'toodledo'
-  #   Toodledo.begin do |session|
-  #     session.add_task('foo')
-  #   end
+  #
+  #  require 'rubygems'
+  #  require 'toodledo'
+  #  require 'yaml'
+  #  config = {
+  #    "connection" => { 
+  #      "url" => "http://www.toodledo.com/api.php",
+  #      "user_id" => "<your user id>",
+  #      "password" => "<your password>"
+  #    }
+  #  }
+  #  Toodledo.set_config(config)
+  #  Toodledo.begin do |session|
+  #    session.add_task('foo')
+  #  end
   #
   def self.begin(logger = nil)
     config = Toodledo.get_config()
