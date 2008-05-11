@@ -149,6 +149,30 @@ module Toodledo
         input = ''
         @client.list_tasks(@session, input)
       end
+      
+      def test_list_tasks_by_context()
+        context = Context.new(345, 'test context')
+        folder = Folder.new(1234, 0, 0, 'test folder')
+        
+        params = {
+          :priority => Priority::LOW,
+          :title => 'foo',
+          :folder => folder,
+          :goal => Goal::NO_GOAL,
+          :repeat => Repeat::NONE,
+          :context => context
+        }
+        task = Task.new(1234, params)
+        tasks = [ task ]
+        contexts = [ context ]
+        @session.should_receive(:get_contexts).and_return(contexts)
+        @session.should_receive(:get_tasks).and_return(tasks)
+        @client.should_receive(:print).with('test context')
+        @client.should_receive(:print).with('  <1234> -- !low *[test folder] @[test context] foo')
+        
+        input = ''
+        @client.list_tasks_by_context(@session, input)        
+      end
 
       def test_list_contexts()
         context = Context.new(1234, 'Context')

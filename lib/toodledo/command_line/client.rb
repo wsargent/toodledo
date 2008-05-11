@@ -18,6 +18,7 @@ require 'toodledo/command_line/add_command'
 # READ
 require 'toodledo/command_line/hotlist_command'
 require 'toodledo/command_line/list_tasks_command'
+require 'toodledo/command_line/list_tasks_by_context_command'
 require 'toodledo/command_line/list_folders_command'
 require 'toodledo/command_line/list_contexts_command'
 require 'toodledo/command_line/list_goals_command'
@@ -76,10 +77,16 @@ module Toodledo
         }
       end
       
+      #
+      # Returns debugging status.
+      #
       def debug?
         return @debug
       end
       
+      #
+      # Sets the debugging on or off.
+      #
       def debug=(is_debug)
         @debug = is_debug
         if (@debug == true)
@@ -89,6 +96,9 @@ module Toodledo
         end
       end
             
+      #
+      # Returns the logger.
+      #
       def logger
         return @logger
       end
@@ -294,6 +304,20 @@ module Toodledo
       end
       
       #
+      # Prints all active tasks nested by context.
+      #
+      def list_tasks_by_context(session, line)
+        folder = parse_folder(line)
+        
+        session.get_contexts().each do |context|
+            criteria = { :folder => folder, :context => context, :notcomp => true }
+            tasks = session.get_tasks(criteria)        
+            print "#{context.name}" if (! tasks.empty?)
+            tasks.each { |task| print "  " + @formatters[:task].format(task) }
+        end
+      end
+        
+      #
       # Lists the goals.  Takes an optional argument of 
       # 'short', 'medium' or 'life'.
       #
@@ -397,6 +421,9 @@ module Toodledo
         print "Task #{task_id} added."
       end
       
+      #
+      # Adds context.
+      #
       def add_context(session, input)
         
         title = input.strip
@@ -406,6 +433,9 @@ module Toodledo
         print "Context #{context_id} added."
       end
       
+      #
+      # Adds goal.
+      #
       def add_goal(session, input)
         input.strip!
         
@@ -522,7 +552,8 @@ module Toodledo
       #
       # delete 123 
       #
-      def delete_task(session, line)        
+      def delete_task(session, line)     
+        logger.debug("delete_task: #{line.inspect}")
         task_id = line
         
         if (task_id == nil)
@@ -538,7 +569,12 @@ module Toodledo
         end
       end
       
+      #
+      # Deletes context.
+      #
       def delete_context(session, line)
+        logger.debug("delete_context #{line.inspect}")
+        
         id = line
         
         id.strip!
@@ -550,6 +586,9 @@ module Toodledo
         end
       end
 
+      #
+      # Deletes goal.
+      #
       def delete_goal(session, line)
         id = line
         
@@ -562,6 +601,9 @@ module Toodledo
         end
       end
 
+      #
+      # Deletes folder
+      #
       def delete_folder(session, line)
         id = line
         
@@ -573,8 +615,10 @@ module Toodledo
           print "Folder #{id} could not be deleted!"      
         end
       end
-        
+      
+      #  
       # Prints out a single line.
+      #
       def print(line = nil)
         if (line == nil)
           puts
