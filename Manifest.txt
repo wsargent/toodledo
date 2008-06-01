@@ -32,6 +32,7 @@ lib/toodledo/priority.rb
 lib/toodledo/repeat.rb
 lib/toodledo/server_error.rb
 lib/toodledo/session.rb
+lib/toodledo/status.rb
 lib/toodledo/task.rb
 test/client_test.rb
 test/parser_helper_test.rb
