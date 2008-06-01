@@ -1,8 +1,6 @@
-# 
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
- 
-
+#
+# The value values for repeats
+#
 module Toodledo
   class Repeat
     
@@ -15,6 +13,7 @@ module Toodledo
     BIMONTHLY = 6
     SEMIANNUALLY = 7
     QUARTERLY = 8
+    WITH_PARENT = 9
     
     REPEAT_ARRAY = [
       NONE,
@@ -25,7 +24,8 @@ module Toodledo
       BIWEEKLY,
       BIMONTHLY,
       SEMIANNUALLY,
-      QUARTERLY
+      QUARTERLY,
+      WITH_PARENT
     ]
     
     def self.each

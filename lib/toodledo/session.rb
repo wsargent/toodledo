@@ -350,6 +350,9 @@ module Toodledo
     # * compbefore 
     # * compafter 
     # * notcomp 
+    # * star
+    # * status
+    # * startdate
     #
     # Returns an array of tasks.  This information is never cached.
     def get_tasks(params={})
@@ -420,7 +423,19 @@ module Toodledo
       # * compafter : A date formated as YYYY-MM-DD. Used to find tasks with a 
       # completed date after this date.
       handle_date(myhash, params, :compafter)
-    
+      
+      # startbefore:
+      handle_date(myhash, params, :startbefore)
+      
+      # startafter:
+      handle_date(myhash, params, :startafter)
+      
+      # star
+      handle_boolean(myhash, params, :star)
+      
+      # status
+      handle_status(myhash, params)
+      
       # * notcomp : Set to 1 to omit completed tasks. Omit variable, or set to 0
       # to retrieve both completed and uncompleted tasks.
       handle_boolean(myhash, params, :notcomp)
@@ -482,6 +497,9 @@ module Toodledo
     
       # Goal handling
       handle_goal(myhash, params)
+      
+      # Add the start date if it's been added.
+      handle_date(myhash, params, :startdate)
     
       # duedate handling.  Take either a string or a Time object.'YYYY-MM-DD'
       handle_date(myhash, params, :duedate)
@@ -497,7 +515,14 @@ module Toodledo
    
       # priority use the map to change from the symbol to the raw numeric value.
       handle_priority(myhash, params)
+      
+      # Handle the star.
+      handle_boolean(myhash, params, :star)
 
+      # Handle the status date.
+      handle_status(myhash, params)
+      
+      # Handle the note.
       handle_string(myhash, params, :note)
     
       result = call('addTask', myhash, @key)
@@ -1120,6 +1145,19 @@ module Toodledo
       end
       
       myhash.merge!({ :repeat => repeat })
+    end
+    
+    # Handles the status parameter
+    def handle_status(myhash, params)
+      status = params[:status]
+      
+      return if (status == nil)
+      
+      if (! Status.valid?(status))
+        raise "Invalid status value: #{status}"
+      end
+      
+      myhash.merge!({ :status => status })
     end
 
     # Handles the priority.  This must be one of several values.

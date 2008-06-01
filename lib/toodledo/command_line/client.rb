@@ -383,10 +383,8 @@ module Toodledo
       # The order of symbols does not matter, but the title must be the last thing
       # on the line.
       #
-      # add @[Deep Space] *Action ^[For Great Justice] Take off every Zig
+      # add @[Deep Space] !top *Action ^[For Great Justice] Take off every Zig
       #
-      # There is no priority handling in this method.  It may be added if there is
-      # demand for it.
       def add_task(session, line)        
         context = parse_context(line)
         folder = parse_folder(line)
@@ -485,7 +483,7 @@ module Toodledo
       # Edits a single task.  This method allows you to change the symbols on a
       # task.  Note that you must specify the ID here.  
       #
-      # edit *Action 12345
+      # edit *Action !top 12345
       def edit_task(session, input)  
         logger.debug("edit_task: #{input.inspect}")
         

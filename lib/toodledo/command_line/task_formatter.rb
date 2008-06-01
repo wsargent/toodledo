@@ -29,6 +29,19 @@ module Toodledo
           fmt = '%m/%d/%Y %I:%M %p'
           msg += " \#[#{task.duedatemodifier}#{task.duedate.strftime(fmt)}]"
         end
+        
+        if (task.startdate != nil)
+          fmt = '%m/%d/%Y'
+          msg += " startdate[#{task.startdate.strftime(fmt)}]"
+        end
+        
+        if (task.status != Status::NONE)
+          msg += " status[#{readable_status(task.status)}]"
+        end
+        
+        if (task.star)
+          msg += " starred"
+        end
   
         if (task.tag != nil)
           msg += " tag[#{task.tag}]"
@@ -76,6 +89,9 @@ module Toodledo
         end
       end
       
+      #
+      # Returns a string matching the numeric repeat code.
+      #
       def readable_repeat(repeat)
         case repeat
         when Repeat::NONE
@@ -98,6 +114,36 @@ module Toodledo
           "quarterly"
         else
           ''
+        end
+      end
+      
+      #
+      # Return a readable status given the numeric code.
+      #
+      def readable_status(status)
+        case status
+        when Status::NONE
+          'none'
+        when Status::NEXT_ACTION
+          'Next Action'
+        when Status::ACTIVE
+          'Active'
+        when Status::PLANNING
+          'Planning'
+        when Status::DELEGATED
+          'Delegated'
+        when Status::WAITING
+          'Waiting'
+        when Status::HOLD
+          'Hold'
+        when Status::POSTPONED
+          'Postponed'
+        when Status::SOMEDAY
+          'Someday'
+        when Status::CANCELLED
+          'Cancelled'
+        when Status::REFERENCE
+          'Reference'
         end
       end
     end

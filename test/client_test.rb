@@ -118,6 +118,7 @@ module Toodledo
           :folder => Folder::NO_FOLDER,
           :context => Context::NO_CONTEXT,
           :goal => Goal::NO_GOAL,
+          :status => Status::NONE,
           :repeat => Repeat::NONE
         }
         task = Task.new(1234, params)
@@ -139,12 +140,14 @@ module Toodledo
           :context => Context.new(345, 'test context'),
           :goal => Goal.new(342341, 0, 0, 'test goal'),
           :repeat => Repeat::BIWEEKLY,
-          :tag => 'some tag'
+          :status => Status::NEXT_ACTION,
+          :tag => 'some tag',
+          :star => true
         }
         task = Task.new(1234, params)
         tasks = [ task ]
         @session.should_receive(:get_tasks).and_return(tasks)
-        @client.should_receive(:print).with('<1234> -- !low *[test folder] @[test context] ^[test goal] repeat[biweekly] tag[some tag] foo')
+        @client.should_receive(:print).with('<1234> -- !low *[test folder] @[test context] ^[test goal] repeat[biweekly] status[Next Action] starred tag[some tag] foo')
 
         input = ''
         @client.list_tasks(@session, input)
@@ -160,6 +163,7 @@ module Toodledo
           :folder => folder,
           :goal => Goal::NO_GOAL,
           :repeat => Repeat::NONE,
+          :status => Status::NONE,
           :context => context
         }
         task = Task.new(1234, params)

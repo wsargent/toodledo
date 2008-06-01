@@ -26,7 +26,14 @@ module Toodledo
     attr_reader :parent_id, :parent, :title, :tag
     attr_reader :added, :modified, :completed
     attr_reader :duedate, :duedatemodifier
-    attr_reader :repeat, :priority, :length, :timer, :note
+    attr_reader :repeat, :priority 
+    attr_reader :length, :timer 
+    attr_reader :note
+    
+    # as of 3.90
+    attr_reader :status
+    attr_reader :startdate
+    attr_reader :star
 
     def server_id
       return @id
@@ -79,6 +86,10 @@ module Toodledo
       @length = params[:length]
       @timer = params[:timer]
       @note = params[:note]
+      
+      @startdate = params[:startdate]
+      @status = params[:status]
+      @star = params[:star]
     end
 
     def completed?
@@ -130,8 +141,11 @@ module Toodledo
       #   <repeat>1</repeat>
       #   <priority>2</priority>
       #   <length>20</length>
-      #   <timer>0</timer>
+      #   <timer onfor=''>0</timer>
       #   <note></note>
+      #   <startdate></startdate>
+      #   <status>0</status>
+      #   <star></star>
       # </task> #++
 
       id = el.elements['id'].text
@@ -220,6 +234,16 @@ module Toodledo
       note = el.elements['note'].text
       note = nil if (note == '0')
       
+      startdate = el.elements['startdate'].text
+      if (startdate != nil)
+        startdate = Date.strptime(startdate, Session::DATE_FORMAT)
+      end
+      
+      status = el.elements['status'].text
+      status = Status::NONE if (status == '0')
+      
+      star = (el.elements['star'].text.to_i == 1)
+      
       params = {
         :parent_id => parent_id,
         :parent => parent,
@@ -239,6 +263,9 @@ module Toodledo
         :length => length,
         :timer => timer,
         :note => note,
+        :startdate => startdate,
+        :status => status,
+        :star => star
       }
       return Task.new(id, params)
     end
