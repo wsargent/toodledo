@@ -574,6 +574,9 @@ module Toodledo
       # Handle completion.
       handle_boolean(myhash, params, :completed)
 
+      # Handle star
+      handle_boolean(myhash, params, :star)
+
       # repeat: use the map to change from the symbol to the raw numeric value.
       handle_repeat(myhash, params)
 
