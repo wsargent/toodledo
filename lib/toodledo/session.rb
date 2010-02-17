@@ -7,6 +7,7 @@ require 'net/https'
 require 'openssl/ssl'
 require 'rexml/document'
 require 'logger'
+require 'fileutils'
 
 module Toodledo
   
@@ -25,8 +26,9 @@ module Toodledo
       'Connection' => 'keep-alive',
       'Keep-Alive' => '300'
     }
-    
-    EXPIRATION_TIME_IN_SECS = 60 * 60
+
+    # The key should be good for four hours.
+    EXPIRATION_TIME_IN_SECS = 60 * 60 * 4
     
     DATE_FORMAT = '%Y-%m-%d'
     
@@ -34,18 +36,19 @@ module Toodledo
     
     TIME_FORMAT = '%I:%M %p'
     
-    attr_accessor :logger 
-      
-    attr_reader :base_url, :user_id, :proxy
+    attr_accessor :logger
+    
+    attr_reader :base_url, :user_id, :proxy, :app_id
 
     # Creates a new session, using the given user name and password.
     # throws InvalidConfigurationError if user_id or password are nil.
-    def initialize(user_id, password, logger = nil)
+    def initialize(user_id, password, logger = nil, app_id = nil)
       raise InvalidConfigurationError.new("Nil user_id") if (user_id == nil)
       raise InvalidConfigurationError.new("Nil password") if (password == nil)
     
       @user_id = user_id
       @password = password
+      @app_id = app_id
       
       @folders = nil
       @contexts = nil
@@ -87,7 +90,7 @@ module Toodledo
       # Get the proxy information if it exists.
       @proxy = proxy
       
-      session_token = get_token(@user_id)
+      session_token = get_token(@user_id, @app_id)
       key = md5(md5(@password).to_s + session_token + @user_id);
       
       @key = key
@@ -105,12 +108,13 @@ module Toodledo
 
     # Returns true if the session has expired.
     def expired?
+      return false
       #logger.debug("expired?") too annoying
       
       # The key is only good for an hour.  If it's been over an hour, 
       # then we count it as expired.
-      return true if (@start_time == nil)
-      return (Time.now - @start_time > EXPIRATION_TIME_IN_SECS)
+      #return true if (@start_time == nil)
+      #return (Time.now - @start_time > EXPIRATION_TIME_IN_SECS)
     end
 
     # Returns a parsable URI object from the base API URL and the parameters.
@@ -221,11 +225,80 @@ module Toodledo
     end
 
     # Gets the token method, given the id.
-    def get_token(user_id)
+    def get_token(user_id, app_id)
       raise "Nil user_id" if (user_id == nil || user_id.empty?)
 
+      # If there is no token file, or the token file is out of date, pull in
+      # a fresh token from the server and write it to the file system.
+      token = read_token(user_id)
+      unless token
+        token = get_uncached_token(user_id, app_id)
+        write_token(user_id, token)
+      end
+
+      return token
+    end
+
+    # Reads a token from the file system, if the given user_id exists and the
+    # token is not too old.
+    def read_token(user_id)
+      token_path = get_token_file(user_id)
+      unless token_path
+        logger.debug("read_token: no token found for #{user_id.inspect}, returning nil")
+        return nil
+      end
+
+      if is_too_old(token_path)
+        File.delete(token_path)
+        return nil
+      end
+
+      token = File.read(token_path)
+      token
+    end
+
+    # Returns true if the file is more than an hour old, false otherwise.
+    def is_too_old(token_path)
+      last_modified_time = File.new(token_path).mtime
+      expiration_time = Time.now - EXPIRATION_TIME_IN_SECS
+      too_old = expiration_time - last_modified_time > 0
+
+      logger.debug "is_too_old: time = #{last_modified_time}, expires = #{expiration_time}, too_old = #{too_old}"
+      
+      return too_old
+    end
+
+    # Gets there full path of the token file.
+    def get_token_file(user_id)
+      tokens_dir = get_tokens_directory()
+      token_path = File.expand_path(File.join(tokens_dir, user_id))
+      unless File.exist?(token_path)
+        return nil
+      end
+      token_path
+    end
+
+    # Make sure that there is a ".toodledo/tokens" directory.
+    def get_tokens_directory()
+      toodledo_dir = "~/.toodledo"
+      tokens_path = File.expand_path(File.join(toodledo_dir, "tokens"))
+      FileUtils.mkdir_p tokens_path
+      tokens_path
+    end
+
+    # Writes the token file to the filesystem.
+    def write_token(user_id, token)
+      logger.debug("write_token: user_id = #{user_id.inspect}, token = #{token.inspect}")
+      token_path = File.expand_path(File.join(get_tokens_directory(), user_id))
+      File.open(token_path, 'w') {|f| f.write(token) }
+    end
+
+    # Calls the server to get a token.
+    def get_uncached_token(user_id, app_id)
       params = { :userid => user_id }
-      result = call('getToken', params)    
+      params.merge!({:appid => app_id}) unless app_id.nil?
+      result = call('getToken', params)
+
       return result.text
     end
 
@@ -314,11 +387,13 @@ module Toodledo
       
       unixtime = result.elements['unixtime'].text.to_i
       server_date = Time.at(unixtime)
-      token_expires = result.elements['tokenexpires'].text.to_i
+      server_offset = result.elements['serveroffset'].text.to_i
+      token_expires = result.elements['tokenexpires'].text.to_f
       hash = {
         :unixtime => unixtime,
         :date => server_date,
-        :tokenexpires => token_expires
+        :tokenexpires => token_expires,
+        :serveroffset => server_offset,
       }
       
       return hash

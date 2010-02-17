@@ -18,14 +18,15 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     @email = 'will.sargent+toodledo_ruby_api@gmail.com'
     @user_id = 'td479be708d8bd7'
     @password = 'toodledo'
+    @app_id = 'ruby-functional-test'
     
     # proxy = { 'host' => '127.0.0.1', 'port' => '8080'}
     proxy = nil
     
     logger = Logger.new(STDOUT)
     logger.level = Logger::DEBUG
-    
-    @session = Session.new(@user_id, @password, logger)
+
+    @session = Session.new(@user_id, @password, logger, @app_id)
     @session.connect(base_url, proxy)
   end
   
@@ -149,14 +150,14 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     assert info_hash[:alias] == 'will.sargent+toodledo_rub'
     assert info_hash[:pro] == false
     assert info_hash[:dateformat] == 0
-    assert info_hash[:timezone] == 0
+    assert info_hash[:timezone] == -2
     assert info_hash[:hidemonths] == 6
     assert info_hash[:hotlistpriority] == 3
     assert info_hash[:hotlistduedate] == 14   
     
     # Doesn't seem to work.
-    # assert info_hash[:lastaddedit] != nil
-    assert info_hash[:lastdelete] != nil
+    #assert info_hash[:lastaddedit] != nil
+    #assert info_hash[:lastdelete] == nil
   end
   
   def test_get_deleted()

@@ -24,6 +24,14 @@ class SessionTest < Test::Unit::TestCase
   def teardown
     @session.disconnect()
   end
+  
+  def test_handle_app_id_in_session
+    new_sess = Toodledo::Session.new('userid', 'password', nil, 'appid')
+    flexmock(new_sess, :get_token => 'token')
+    new_sess.connect()
+    assert_not_nil new_sess.app_id
+  end
+
 
   def test_handle_goal_with_name()
     params = { :goal => 'goal_name' }

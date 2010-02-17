@@ -5,7 +5,7 @@
 module Toodledo
 
   # Required for gem  
-  VERSION = '1.3.0'
+  VERSION = '1.3.2'
   
   # Returns the configuration object.
   def self.get_config()
@@ -49,8 +49,9 @@ module Toodledo
     base_url = connection['url']
     user_id = connection['user_id']
     password = connection['password']
-    
-    session = Session.new(user_id, password, logger)
+    app_id = connection['app_id'] || 'ruby_app'
+
+    session = Session.new(user_id, password, logger, app_id)
 
     base_url = Session::DEFAULT_API_URL if (base_url == nil)
     session.connect(base_url, proxy)

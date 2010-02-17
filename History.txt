@@ -1,3 +1,13 @@
+== 1.3.2 / 2010-02-16
+
+* Added file caching for token (will write to $HOME/.toodledo/tokens/<user_id> file)
+* Added patch for the app_id (thx to Greg Miller)
+* Added serveroffset to get_server_info call.
+
+== 1.3.1 / ?
+
+* Fix some bugs.
+
 == 1.3.0 / 2008-05-31
 
 * Added star, status and startdate to correspond to version 3.9.0
