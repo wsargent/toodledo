@@ -239,8 +239,8 @@ module Toodledo
         startdate = Date.strptime(startdate, Session::DATE_FORMAT)
       end
       
-      status = el.elements['status'].text
-      status = Status::NONE if (status == '0')
+      status = el.elements['status'].text.to_i
+      status = Status::NONE if (status == 0)
       
       star = (el.elements['star'].text.to_i == 1)
       
