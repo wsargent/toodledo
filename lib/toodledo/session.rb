@@ -244,7 +244,7 @@ module Toodledo
     def read_token(user_id)
       token_path = get_token_file(user_id)
       unless token_path
-        logger.debug("read_token: no token found for #{user_id.inspect}, returning nil")
+        logger.debug("read_token: no token found for #{user_id.inspect}, returning nil") if logger
         return nil
       end
 
@@ -263,7 +263,7 @@ module Toodledo
       expiration_time = Time.now - EXPIRATION_TIME_IN_SECS
       too_old = expiration_time - last_modified_time > 0
 
-      logger.debug "is_too_old: time = #{last_modified_time}, expires = #{expiration_time}, too_old = #{too_old}"
+      logger.debug "is_too_old: time = #{last_modified_time}, expires = #{expiration_time}, too_old = #{too_old}" if logger
       
       return too_old
     end
@@ -288,7 +288,7 @@ module Toodledo
 
     # Writes the token file to the filesystem.
     def write_token(user_id, token)
-      logger.debug("write_token: user_id = #{user_id.inspect}, token = #{token.inspect}")
+      logger.debug("write_token: user_id = #{user_id.inspect}, token = #{token.inspect}") if logger
       token_path = File.expand_path(File.join(get_tokens_directory(), user_id))
       File.open(token_path, 'w') {|f| f.write(token) }
     end
@@ -347,7 +347,7 @@ module Toodledo
       
       lastdelete = result.elements['lastdelete'].text      
       if (lastdelete != nil)
-        logger.debug("lastdelete = #{lastdelete}")
+        logger.debug("lastdelete = #{lastdelete}") if logger
         last_deleted_date = DateTime.strptime(lastdelete, fmt)
       else
         last_deleted_date = nil
