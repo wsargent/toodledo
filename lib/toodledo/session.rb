@@ -26,10 +26,10 @@ module Toodledo
       'Connection' => 'keep-alive',
       'Keep-Alive' => '300'
     }
-
-    # The key should be good for four hours.
-    EXPIRATION_TIME_IN_SECS = 60 * 60 * 4
     
+    # Make it a little less than 4 hours, so the file should always be fresher.
+    FILE_EXPIRATION_TIME_IN_SECS = (60 * 60 * 4) - 300
+
     DATE_FORMAT = '%Y-%m-%d'
     
     DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -57,6 +57,7 @@ module Toodledo
       @folders_by_id = nil
       @goals_by_id = nil
       @contexts_by_id = nil
+      @expiration_time = nil
       
       @logger = logger
     end
@@ -65,7 +66,7 @@ module Toodledo
     def md5(input_string)
       return Digest::MD5.hexdigest(input_string)
     end
-  
+    
     # Connects to the server, asking for a new key that's good for an hour.
     # Optionally takes a base URL as a parameter.  Defaults to DEFAULT_API_URL.
     def connect(base_url = DEFAULT_API_URL, proxy = nil)
@@ -102,19 +103,24 @@ module Toodledo
       logger.debug("disconnect()") if logger
       @key = nil
       @start_time = nil
+      @expiration_time = nil
       @base_url = nil
       @proxy = nil
     end
 
+    def find_expiration_time(expiration_in_mins) 
+      # Expiration time is measured in minutes, i.e. 49.4
+      exp_mins = expiration_in_mins.to_i # drop the fractional bit
+      @start_time + (exp_mins * 60)
+    end
+
     # Returns true if the session has expired.
     def expired?
-      return false
-      #logger.debug("expired?") too annoying
-      
-      # The key is only good for an hour.  If it's been over an hour, 
-      # then we count it as expired.
-      #return true if (@start_time == nil)
-      #return (Time.now - @start_time > EXPIRATION_TIME_IN_SECS)
+      has_expired = (@expiration_time == nil) || (Time.now > @expiration_time)
+      if (has_expired) 
+        logger.debug("expired? == true") if logger
+      end
+      has_expired
     end
 
     # Returns a parsable URI object from the base API URL and the parameters.
@@ -134,6 +140,13 @@ module Toodledo
       return output_string
     end
 
+    def reconnect(base_url, proxy) 
+      disconnect()
+      connect(base_url, proxy)
+      server_info = get_server_info()    
+      @expiration_time = find_expiration_time(server_info[:token_expires])      
+    end
+
     # Calls Toodledo with the method name, the parameters and the session key.
     # Returns the text inside the document root, if any.
     def call(method, params, key = nil)  
@@ -147,17 +160,16 @@ module Toodledo
       end
 
       # If it's been more than an hour, then ask for a new key.
-      if (@key != nil && expired?)
-        logger.debug("call(#{method}) connection expired, reconnecting...") if logger
+      if (@key && expired? && method != "getServerInfo")
+        logger.info("call(#{method}) connection expired, reconnecting...") if logger
 
         # Save the connection information (we'll need it)
         base_url = @base_url
         proxy = @proxy
-        disconnect() # ensures that key == nil, which is crucial to avoid an endless loop...
-        connect(base_url, proxy)
-
+        reconnect(base_url, proxy)
+        
         # swap out the key (if any) before we start assembling the request
-        if (key != nil)
+        if (key)
           key = @key
         end
       end
@@ -213,9 +225,12 @@ module Toodledo
 
       root_node = doc.root
       if (root_node.name == 'error')
-        error_text = root_node.text
+        error_text = root_node.text        
         if (error_text == 'Invalid ID number')
           raise Toodledo::ItemNotFoundError.new(error_text)
+        elsif (error_text == 'key did not validate')        
+          raise Toodledo::InvalidKeyError.new(error_text)
+          # May want to get uncached token here as a recovery mechanism?
         else
           raise Toodledo::ServerError.new(error_text)
         end
@@ -260,7 +275,7 @@ module Toodledo
     # Returns true if the file is more than an hour old, false otherwise.
     def is_too_old(token_path)
       last_modified_time = File.new(token_path).mtime
-      expiration_time = Time.now - EXPIRATION_TIME_IN_SECS
+      expiration_time = Time.now - FILE_EXPIRATION_TIME_IN_SECS
       too_old = expiration_time - last_modified_time > 0
 
       logger.debug "is_too_old: time = #{last_modified_time}, expires = #{expiration_time}, too_old = #{too_old}" if logger
