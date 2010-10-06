@@ -101,6 +101,13 @@ module Toodledo
     # Disconnects from the server.
     def disconnect()
       logger.debug("disconnect()") if logger
+      
+      token_path = get_token_file(user_id)
+      if token_path
+        logger.debug("deleting token path()") if logger        
+        File.delete(token_path)
+      end
+      
       @key = nil
       @start_time = nil
       @expiration_time = nil
@@ -276,11 +283,11 @@ module Toodledo
     def is_too_old(token_path)
       last_modified_time = File.new(token_path).mtime
       expiration_time = Time.now - FILE_EXPIRATION_TIME_IN_SECS
-      too_old = expiration_time - last_modified_time > 0
-
-      logger.debug "is_too_old: time = #{last_modified_time}, expires = #{expiration_time}, too_old = #{too_old}" if logger
+      too_old_by = last_modified_time - expiration_time
       
-      return too_old
+      logger.debug "is_too_old: expires in #{too_old_by} seconds" if logger
+      
+      return too_old_by < 0
     end
 
     # Gets there full path of the token file.
