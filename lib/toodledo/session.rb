@@ -281,8 +281,8 @@ module Toodledo
 
     # Returns true if the file is more than an hour old, false otherwise.
     def is_too_old(token_path)
-      last_modified_time = File.new(token_path).mtime
-      expiration_time = Time.now - FILE_EXPIRATION_TIME_IN_SECS
+      last_modified_time = File.new(token_path).mtime.to_i
+      expiration_time = Time.now.to_i - FILE_EXPIRATION_TIME_IN_SECS
       too_old_by = last_modified_time - expiration_time
       
       logger.debug "is_too_old: expires in #{too_old_by} seconds" if logger
