@@ -1,3 +1,11 @@
+== 1.3.4 / 2010-10-08
+
+* More patches for reestablishing connection, based off file modification time as well as :tokenexpires
+
+== 1.3.3 / 2010-10-05
+
+* Patches for reestablishing connection when the token is too old.
+
 == 1.3.2 / 2010-02-16
 
 * Added file caching for token (will write to $HOME/.toodledo/tokens/<user_id> file)
