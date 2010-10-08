@@ -95,7 +95,10 @@ module Toodledo
       key = md5(md5(@password).to_s + session_token + @user_id);
       
       @key = key
-      @start_time = Time.now      
+      @start_time = Time.now 
+      
+      server_info = get_server_info()
+      @expiration_time = find_expiration_time(server_info[:tokenexpires])      
     end
     
     # Disconnects from the server.
@@ -123,9 +126,10 @@ module Toodledo
 
     # Returns true if the session has expired.
     def expired?
-      has_expired = (@expiration_time == nil) || (Time.now > @expiration_time)
+      current_time = Time.now
+      has_expired = (@expiration_time != nil) && (current_time > @expiration_time)
       if (has_expired) 
-        logger.debug("expired? == true") if logger
+        logger.debug("#{@expiration_time} > #{current_time}, expired == true") if logger
       end
       has_expired
     end
@@ -150,8 +154,6 @@ module Toodledo
     def reconnect(base_url, proxy) 
       disconnect()
       connect(base_url, proxy)
-      server_info = get_server_info()    
-      @expiration_time = find_expiration_time(server_info[:token_expires])      
     end
 
     # Calls Toodledo with the method name, the parameters and the session key.
