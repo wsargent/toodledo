@@ -237,9 +237,10 @@ module Toodledo
         error_text = root_node.text        
         if (error_text == 'Invalid ID number')
           raise Toodledo::ItemNotFoundError.new(error_text)
-        elsif (error_text == 'key did not validate')        
-          raise Toodledo::InvalidKeyError.new(error_text)
-          # May want to get uncached token here as a recovery mechanism?
+        elsif (error_text == 'key did not validate')
+          logger.debug("call(#{method}): invalid key, reconnecting") if logger
+          reconnect();
+          root_node = call(method, params);
         else
           raise Toodledo::ServerError.new(error_text)
         end
