@@ -221,6 +221,9 @@ module Toodledo
       
       # make the call
       response = http.request_get(url.request_uri, HEADERS)
+      unless response
+        raise Toodledo::ServerError.new("No HTTP response found from request #{url.path}");
+      end
       body = response.body
 
       # body = url.read
@@ -233,19 +236,25 @@ module Toodledo
       end
 
       root_node = doc.root
+      retry_error = nil
       if (root_node.name == 'error')
         error_text = root_node.text        
-        if (error_text == 'Invalid ID number')
+        case error_text
+        when 'Invalid ID number' then
           raise Toodledo::ItemNotFoundError.new(error_text)
-        elsif (error_text == 'key did not validate')
-          logger.debug("call(#{method}): invalid key, reconnecting") if logger
-          reconnect();
-          root_node = call(method, params);
+        when 'key did not validate', 'No Key Specified' then 
+          retry_error = true    
         else
           raise Toodledo::ServerError.new(error_text)
         end
       end
-
+      
+      if (retry_error)
+        logger.debug("call(#{method}): invalid key, reconnecting") if logger
+        reconnect(@base_url, @proxy);
+        root_node = call(method, params);
+      end
+      
       return root_node
     end
 
