@@ -17,6 +17,11 @@ module Toodledo
   #
   class Session
     
+    INVALID_ID_MESSAGE = 'Invalid ID number'
+    INVALID_KEY_MESSAGE = 'key did not validate'
+    NO_KEY_SPECIFIED_MESSAGE = 'No Key Specified'
+    EXCESSIVE_TOKEN_MESSAGE = 'Excessive API token requests over the last 1 hour.  This user is temporarily blocked.'
+
     DEFAULT_API_URL = 'http://www.toodledo.com/api.php'
 
     USER_AGENT = "Ruby/#{Toodledo::VERSION} (#{RUBY_PLATFORM})"
@@ -240,19 +245,20 @@ module Toodledo
       if (root_node.name == 'error')
         error_text = root_node.text        
         case error_text
-        when 'Invalid ID number' then
+        when INVALID_ID_MESSAGE then
           raise Toodledo::ItemNotFoundError.new(error_text)
-        when 'key did not validate', 'No Key Specified' then 
-          retry_error = true    
+        when INVALID_KEY_MESSAGE then
+          disconnect()
+          raise Toodledo::InvalidKeyError.new(error_text)    
+        when NO_KEY_SPECIFIED_MESSAGE then
+          disconnect()
+          raise Toodledo::NoKeySpecifiedError.new(error_text)              
+        when EXCESSIVE_TOKEN_MESSAGE
+          disconnect()
+          raise Toodledo::ExcessiveTokenRequestsError.new(error_text)
         else
           raise Toodledo::ServerError.new(error_text)
         end
-      end
-      
-      if (retry_error)
-        logger.debug("call(#{method}): invalid key, reconnecting") if logger
-        reconnect(@base_url, @proxy);
-        root_node = call(method, params);
       end
       
       return root_node

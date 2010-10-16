@@ -28,7 +28,6 @@ lib/toodledo/context.rb
 lib/toodledo/folder.rb
 lib/toodledo/goal.rb
 lib/toodledo/invalid_configuration_error.rb
-lib/toodledo/item_not_found_error.rb
 lib/toodledo/priority.rb
 lib/toodledo/repeat.rb
 lib/toodledo/server_error.rb

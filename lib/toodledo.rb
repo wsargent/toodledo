@@ -65,7 +65,6 @@ module Toodledo
 end
 
 require 'toodledo/server_error'
-require 'toodledo/item_not_found_error'
 require 'toodledo/invalid_configuration_error'
 require 'toodledo/status'
 require 'toodledo/task'
