@@ -24,7 +24,48 @@ tasks with a BetaBrite?  It can all happen.}
   s.email = %q{will@tersesystems.com}
   s.executables = ["toodledo"]
   s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.txt"]
-  s.files = ["History.txt", "Manifest.txt", "README.txt", "Rakefile", "bin/toodledo", "lib/toodledo.rb", "lib/toodledo/command_line/add_command.rb", "lib/toodledo/command_line/base_command.rb", "lib/toodledo/command_line/client.rb", "lib/toodledo/command_line/complete_command.rb", "lib/toodledo/command_line/context_formatter.rb", "lib/toodledo/command_line/delete_command.rb", "lib/toodledo/command_line/edit_command.rb", "lib/toodledo/command_line/folder_formatter.rb", "lib/toodledo/command_line/goal_formatter.rb", "lib/toodledo/command_line/hotlist_command.rb", "lib/toodledo/command_line/interactive_command.rb", "lib/toodledo/command_line/list_contexts_command.rb", "lib/toodledo/command_line/list_folders_command.rb", "lib/toodledo/command_line/list_goals_command.rb", "lib/toodledo/command_line/list_tasks_by_context_command.rb", "lib/toodledo/command_line/list_tasks_command.rb", "lib/toodledo/command_line/parser_helper.rb", "lib/toodledo/command_line/setup_command.rb", "lib/toodledo/command_line/stdin_command.rb", "lib/toodledo/command_line/task_formatter.rb", "lib/toodledo/context.rb", "lib/toodledo/folder.rb", "lib/toodledo/goal.rb", "lib/toodledo/invalid_configuration_error.rb", "lib/toodledo/item_not_found_error.rb", "lib/toodledo/priority.rb", "lib/toodledo/repeat.rb", "lib/toodledo/server_error.rb", "lib/toodledo/session.rb", "lib/toodledo/status.rb", "lib/toodledo/task.rb", "test/client_test.rb", "test/parser_helper_test.rb", "test/session_test.rb", "test/toodledo_functional_test.rb"]
+  s.files = [
+       "History.txt", 
+       "Manifest.txt", 
+       "README.txt",
+       "Rakefile",
+       "bin/toodledo", 
+       "lib/toodledo.rb", 
+       "lib/toodledo/command_line/add_command.rb", 
+       "lib/toodledo/command_line/base_command.rb", 
+       "lib/toodledo/command_line/client.rb", 
+       "lib/toodledo/command_line/complete_command.rb", 
+       "lib/toodledo/command_line/context_formatter.rb", 
+       "lib/toodledo/command_line/delete_command.rb", 
+       "lib/toodledo/command_line/edit_command.rb",
+       "lib/toodledo/command_line/folder_formatter.rb", 
+       "lib/toodledo/command_line/goal_formatter.rb", 
+       "lib/toodledo/command_line/hotlist_command.rb", 
+       "lib/toodledo/command_line/interactive_command.rb",
+       "lib/toodledo/command_line/list_contexts_command.rb",
+       "lib/toodledo/command_line/list_folders_command.rb", 
+       "lib/toodledo/command_line/list_goals_command.rb",
+       "lib/toodledo/command_line/list_tasks_by_context_command.rb",
+       "lib/toodledo/command_line/list_tasks_command.rb",
+       "lib/toodledo/command_line/parser_helper.rb",
+       "lib/toodledo/command_line/setup_command.rb",
+       "lib/toodledo/command_line/stdin_command.rb",
+       "lib/toodledo/command_line/task_formatter.rb", 
+       "lib/toodledo/context.rb",
+       "lib/toodledo/folder.rb", 
+       "lib/toodledo/goal.rb", 
+       "lib/toodledo/invalid_configuration_error.rb",
+       "lib/toodledo/priority.rb", 
+       "lib/toodledo/repeat.rb",
+       "lib/toodledo/server_error.rb",
+       "lib/toodledo/session.rb", 
+       "lib/toodledo/status.rb",
+       "lib/toodledo/task.rb",
+       "test/client_test.rb",
+       "test/parser_helper_test.rb",
+       "test/session_test.rb", 
+       "test/toodledo_functional_test.rb"
+  ]
   s.homepage = %q{http://gemcutter.org/gems/toodledo}
   s.rdoc_options = ["--main", "README.txt"]
   s.require_paths = ["lib"]
