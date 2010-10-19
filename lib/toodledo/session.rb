@@ -32,8 +32,8 @@ module Toodledo
       'Keep-Alive' => '300'
     }
     
-    # Make it a little less than 4 hours, so the file should always be fresher.
-    FILE_EXPIRATION_TIME_IN_SECS = (60 * 60 * 4) - 300
+    # Make file expiration be 4 hours.
+    FILE_EXPIRATION_TIME_IN_SECS = (60 * 60 * 4)
 
     DATE_FORMAT = '%Y-%m-%d'
     
@@ -131,10 +131,11 @@ module Toodledo
 
     # Returns true if the session has expired.
     def expired?
+      logger.debug("Expiration time #{@expiration_time} ") if logger
       current_time = Time.now
       has_expired = (@expiration_time != nil) && (current_time > @expiration_time)
       if (has_expired) 
-        logger.debug("#{@expiration_time} > #{current_time}, expired == true") if logger
+        logger.debug("Expiration time #{@expiration_time} > current time #{current_time}, expired == true") if logger
       end
       has_expired
     end
