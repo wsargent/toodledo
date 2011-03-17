@@ -17,6 +17,8 @@ module Toodledo
       
       PRIORITY_REGEXP = /!(top|high|medium|low|negative)/
       
+      DATE_REGEXP = /\#((\w+)|\[(.*?)\])/
+      
       # Note that level must exist at the beginning of the line
       LEVEL_REGEXP = /^(life|medium|short)/
       
@@ -25,7 +27,8 @@ module Toodledo
         FOLDER_REGEXP, 
         GOAL_REGEXP,
         CONTEXT_REGEXP, 
-        PRIORITY_REGEXP
+        PRIORITY_REGEXP,
+        DATE_REGEXP
       ]
   
       # Parses a context in the format @Context or @[Spaced Context]
@@ -45,6 +48,13 @@ module Toodledo
       # Parses a goal in the format ^Goal or ^[Spaced Goal]
       def parse_goal(input)
         match_data = GOAL_REGEXP.match(input)
+        return match_data if (match_data == nil)    
+        return strip_brackets(match_data[1])
+      end
+      
+      # Parses a date in the format <[2011-03-17]
+      def parse_date(input)
+        match_data = DATE_REGEXP.match(input)
         return match_data if (match_data == nil)    
         return strip_brackets(match_data[1])
       end

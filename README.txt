@@ -35,8 +35,10 @@ The first thing you should do is open up your browser and go to:
 
 and retrieve your userid.  You will need this for setup.
 
-Then, install toodledo.  This is either 'gem install toodledo' or 
-'sudo gem install toodledo' depending on your platform.
+Build the gem. 'gem build toodledo.gemspec'
+
+Then, install toodledo.  This is either 'gem install toodledo-1.3.6.gem' or 
+'sudo gem install toodledo-1.3.6.gem' depending on your platform.
 
 Then, type 'toodledo setup' and enter your userid and password in
 the spaces provided.  Then save the file, and you're good to go.
@@ -55,6 +57,7 @@ for the client is as follows:
   @Context
   ^Goal
   !Priority
+  #Today
 
 You can encase the symbol with square brackets if there is a space involved:
 
@@ -62,14 +65,19 @@ You can encase the symbol with square brackets if there is a space involved:
   @[Someday / Maybe]
   ^[Write Toodledo Ruby API]
   !top
+  #[2011-03-18]
   
 Let's use the command line client to list only the tasks you have in the office:
 
-  toodledo list '@Office *Action'
+  toodledo tasks '@Office *Action'
 
 Now let's add a task with several symbols:
 
   toodledo add '*Action @Programming ^[Write Toodledo Ruby API] Write docs'
+
+Now let's add a date:
+
+  toodledo add Write docs #Today
 
 You can also edit tasks, using the task id.  This sets the folder to Someday:
 
@@ -99,7 +107,7 @@ the symbols, so in interactive mode
 
 Then it produces the same results as:
 
-  toodledo list '@Office *Action'
+  toodledo tasks '@Office *Action'
 
 Finally, if you want to write your own scripts, working with Toodledo is very
 simple, since it will use the YAML config file:

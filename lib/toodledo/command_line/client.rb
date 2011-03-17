@@ -390,6 +390,7 @@ module Toodledo
         folder = parse_folder(line)
         goal = parse_goal(line)
         priority = parse_priority(line)
+        date = parse_date(line)
         title = parse_remainder(line)
         
         params = {}
@@ -407,6 +408,10 @@ module Toodledo
         
         if (goal != nil)
           params.merge!({ :goal => goal })
+        end
+        
+        if (date != nil)
+          params.merge!({ :duedate => date })
         end
         
         # If we got nothing but 'add' then ask for it explicitly.
