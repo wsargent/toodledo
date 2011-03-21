@@ -48,21 +48,7 @@ module Toodledo
     def server_id
       return @id
     end
-    
-    # Parses a goal from an XML element.
-    def self.parse(session, el)      
-      id = el.attributes['id']
-      level = el.attributes['level'].to_i
-      contributes_id = el.attributes['contributes']
-      name = el.text
-      goal = Goal.new(id, level, contributes_id, name)
-      return goal    
-    end
-    
-    def to_xml()
-      return "<goal id=\"#{@id}\" level=\"#{@level}\" contributes=\"#{@contributes_id}\" name=\"#{@name}\">"
-    end
-    
+
   end
   
 end

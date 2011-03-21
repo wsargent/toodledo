@@ -1,24 +1,11 @@
 #
-# The top level Toodledo module.  This does very little that is
-# interesting.  You probably want to look at Toodledo::Session
+# The top level Toodledo module.
 #
 module Toodledo
 
   # Required for gem  
-  VERSION = '1.3.5'
-  
-  # Returns the configuration object.
-  def self.get_config()
-    return @@config
-  end
-  
-  # Sets the configuration explicitly.  Useful when you
-  # want to specifically set the configuration without
-  # using the file system.
-  def self.set_config(override_config)
-    @@config = override_config
-  end
-  
+  VERSION = '2.0.0'
+
   #
   # Provides a convenient way of connecting and running a session.
   # 
@@ -40,21 +27,16 @@ module Toodledo
   #    session.add_task('foo')
   #  end
   #
-  def self.begin(logger = nil)
-    config = Toodledo.get_config()
-          
+  def self.begin(config, logger = nil)
     proxy = config['proxy']
           
     connection = config['connection']
-    base_url = connection['url']
     user_id = connection['user_id']
     password = connection['password']
     app_id = connection['app_id'] || 'ruby_app'
 
     session = Session.new(user_id, password, logger, app_id)
-
-    base_url = Session::DEFAULT_API_URL if (base_url == nil)
-    session.connect(base_url, proxy)
+    session.connect(proxy)
     
     if (block_given?)
       yield(session)
@@ -64,7 +46,6 @@ module Toodledo
   end  
 end
 
-require 'toodledo/server_error'
 require 'toodledo/invalid_configuration_error'
 require 'toodledo/status'
 require 'toodledo/task'
@@ -73,4 +54,4 @@ require 'toodledo/goal'
 require 'toodledo/folder'
 require 'toodledo/repeat'
 require 'toodledo/priority'
-require 'toodledo/session'
+require 'toodledo/network'

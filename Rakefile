@@ -18,7 +18,7 @@ Hoe.spec('toodledo') do |p|
   p.test_globs = ["test/**/*_test.rb"]
   p.extra_deps << ['cmdparse', '>= 0']
   p.extra_deps << ['highline', '>= 0']
-  p.extra_dev_deps << [ 'flexmock', '>= 0']
+  p.extra_dev_deps << [ 'rspec', '>= 0']
 end
 
 # vim: syntax=Ruby
