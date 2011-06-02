@@ -111,7 +111,7 @@ module Toodledo
       logger.debug("disconnect()") if logger
       
       token_path = get_token_file(user_id)
-      if token_path
+      if token_path and expired?
         logger.debug("deleting token path()") if logger        
         File.delete(token_path)
       end
