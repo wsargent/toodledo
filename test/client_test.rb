@@ -163,25 +163,43 @@ module Toodledo
         @client.list_tasks(@session, input)
       end
 
-
-      # TODO Is this really everything? What about duedate?
       def test_list_tasks_with_everything()
 
-        params = {
+        parent_fields = {
+          :priority => Priority::HIGH,
+          :title => 'bar',
+          :folder => Folder::NO_FOLDER,
+          :context => Context::NO_CONTEXT,
+          :goal => Goal::NO_GOAL,
+          :status => Status::NONE,
+          :repeat => Repeat::NONE
+        }
+        parent_task = Task.new(54321, parent_fields)
+        
+        child_fields = {
           :priority => Priority::LOW,
           :title => 'foo',
           :folder => Folder.new(1234, 0, 0, 'test folder'),
           :context => Context.new(345, 'test context'),
           :goal => Goal.new(342341, 0, 0, 'test goal'),
           :repeat => Repeat::BIWEEKLY,
+          :duedatemodifier => 0, # Due By
+          :duedate => Time.local(2011,06,25,13,45,56),
+          :startdate =>Date.new(2010,05,23),
           :status => Status::NEXT_ACTION,
+          :star => true,
           :tag => 'some tag',
-          :star => true
+          :parent_id => 54321,
+          :parent => parent_task,
+          :length => 125, # Minutes of duration
+          :timer => 423, # Seconds timer has been running
+          :num_children => 5
         }
-        task = Task.new(1234, params)
-        tasks = [ task ]
+        child_task = Task.new(1234, child_fields)
+        tasks = [ parent_task, child_task ]
         @session.should_receive(:get_tasks).and_return(tasks)
-        @client.should_receive(:print).with('<1234> -- !low *[test folder] @[test context] ^[test goal] repeat[biweekly] status[Next Action] starred %[some tag] foo')
+        @client.should_receive(:print).with("<54321> -- !high bar").once.ordered
+        @client.should_receive(:print).with("<1234> -- !low *[test folder] @[test context] ^[test goal] repeat[biweekly] <[0:06/25/2011 01:45 PM] startdate[05/23/2010] status[Next Action] starred %[some tag] parent[bar] length[125] timer[423] children[5] foo").once.ordered
 
         input = ''
         @client.list_tasks(@session, input)

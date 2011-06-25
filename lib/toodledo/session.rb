@@ -1093,7 +1093,7 @@ module Toodledo
     def handle_number(myhash, params, symbol)
       value = params[symbol]
       if (value != nil)
-        if (value.kind_of? FixNum)
+        if (value.kind_of? Integer)
           myhash.merge!({ symbol => value.to_s})
         end
       end        
@@ -1152,7 +1152,7 @@ module Toodledo
         value = value.join(' ')   
       end
     
-      myhash.merge!({ symbol => value }) 
+      myhash.merge!({ :tag => value }) 
     end
   
     def handle_time(myhash, params, symbol)      

@@ -28,7 +28,7 @@ module Toodledo
   
         if (task.duedate != nil)
           fmt = '%m/%d/%Y %I:%M %p'
-          msg += " <[#{task.duedatemodifier}#{task.duedate.strftime(fmt)}]"
+          msg += " <[#{task.duedatemodifier}:#{task.duedate.strftime(fmt)}]"
         end
         
         if (task.startdate != nil)
