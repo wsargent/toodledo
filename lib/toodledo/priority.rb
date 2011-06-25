@@ -3,6 +3,7 @@ module Toodledo
   #
   # A priority enum.
   #
+  # TODO Refactor using symbols?
   class Priority
     
     NEGATIVE = -1

@@ -47,6 +47,41 @@ class ParserHelperTest < Test::Unit::TestCase
     
     assert(folder == 'Harder Folder', "Folder not found")
   end
+
+  def test_find_duedate
+    input = "<duedate @Context ^Goal blah blah blah"
+    
+    duedate = parse_date(input)
+    
+    assert(duedate == 'duedate', "duedate not found")
+  end
+
+  # TODO Separate parse_date from parse_duedate?
+  def test_find_harder_duedate
+    
+    input = "Some Text @[Harder Context] <[Harder duedate] ^[Harder Goal]"
+    
+    duedate = parse_date(input)
+    
+    assert(duedate == 'Harder duedate', "duedate not found")
+  end
+
+  def test_find_tag
+    input = "%tag @Context ^Goal blah blah blah"
+    
+    tag = parse_tag(input)
+    
+    assert(tag == ['tag'], "tag not found")
+  end
+
+  def test_find_harder_tag
+    
+    input = "Some Text @[Harder Context] %[Harder tag] ^[Harder Goal]"
+    
+    tag = parse_tag(input)
+    
+    assert(tag == ['Harder','tag'], "tag not found")
+  end
   
   def test_find_goal
     input = "*Folder @Context ^Goal wefawef wefawefawfe"
