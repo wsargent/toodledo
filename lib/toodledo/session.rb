@@ -72,7 +72,7 @@ module Toodledo
       return Digest::MD5.hexdigest(input_string)
     end
     
-    # Connects to the server, asking for a new key that's good for an hour.
+    # Connects to the server, asking for a new key that's good for four hours.
     # Optionally takes a base URL as a parameter.  Defaults to DEFAULT_API_URL.
     def connect(base_url = DEFAULT_API_URL, proxy = nil)
       logger.debug("connect(#{base_url}, #{proxy.inspect})") if logger
@@ -469,11 +469,14 @@ module Toodledo
     # * star
     # * status
     # * startdate
+    # * tag
     #
     # Returns an array of tasks.  This information is never cached.
     def get_tasks(params={})
       logger.debug("get_tasks(#{params.inspect})") if logger
       myhash = {}
+      
+      # TODO Very repetitious. Refactor
     
       # * title : A text string up to 255 characters.
       handle_string(myhash, params, :title)
@@ -555,6 +558,8 @@ module Toodledo
       # * notcomp : Set to 1 to omit completed tasks. Omit variable, or set to 0
       # to retrieve both completed and uncompleted tasks.
       handle_boolean(myhash, params, :notcomp)
+      
+      handle_tag(myhash, params)
     
       result = call('getTasks', myhash, @key)
       tasks = []
@@ -594,6 +599,7 @@ module Toodledo
     #         :bimonthly, :semiannually, :quarterly }
     #   length: a Number, number of minutes
     #   priority: one of { :negative, :low, :medium, :high, :top }
+    #   tag: an Array of strings
     #
     # Returns: the id of the added task as a String.
     def add_task(title, params={})
@@ -632,6 +638,8 @@ module Toodledo
       # priority use the map to change from the symbol to the raw numeric value.
       handle_priority(myhash, params)
       
+      handle_tag(myhash, params)
+      
       # Handle the star.
       handle_boolean(myhash, params, :star)
 
@@ -660,6 +668,7 @@ module Toodledo
     # * length : An integer representing the number of minutes that the task will take to complete.
     # * priority : Use the PRIORITY_MAP with the relevant symbol here.
     # * note : A text string.  
+    # * tag: An Array of Strings (tags)
     def edit_task(id, params = {})
       logger.debug("edit_task(#{id}, #{params.inspect})") if logger
       raise "Nil id" if (id == nil)
@@ -698,6 +707,8 @@ module Toodledo
 
       # priority use the map to change from the symbol to the raw numeric value.
       handle_priority(myhash, params)
+      
+      handle_tag(myhash, params)
   
       handle_string(myhash, params, :note)
     
@@ -1126,6 +1137,21 @@ module Toodledo
         value = value.strftime('%Y-%m-%d')    
       end
       
+      myhash.merge!({ symbol => value }) 
+    end
+  
+
+    def handle_tag(myhash, params)
+      value = params[:tag]
+      if (value == nil)
+        return
+      end
+    
+      case value
+      when Array
+        value = value.join(' ')   
+      end
+    
       myhash.merge!({ symbol => value }) 
     end
   

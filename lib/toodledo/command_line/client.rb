@@ -172,6 +172,16 @@ module Toodledo
           @filters[:priority] = priority
         end
         
+        date = parse_date(input)
+        if (priority != nil)
+          @filters[:duedate] = date
+        end
+        
+        tag = parse_tag(input)
+        if (priority != nil)
+          @filters[:tag] = tag
+        end
+        
         if (logger)
           logger.debug("@filters = #{@filters.inspect}")
         end
@@ -220,6 +230,8 @@ module Toodledo
         folder = parse_folder(input)
         goal = parse_goal(input)
         priority = parse_priority(input)
+        date = parse_date(input)
+        tag = parse_tag(input)
         
         params = { :notcomp => true }
         
@@ -238,6 +250,14 @@ module Toodledo
         
         if (priority != nil)
           params.merge!({ :priority => priority })
+        end
+        
+        if (date != nil)
+          params.merge!({ :duedate => date })
+        end
+        
+        if (tag != nil)
+          params.merge!({ :tag => tag })
         end
               
         tasks = session.get_tasks(params)
@@ -269,10 +289,13 @@ module Toodledo
         params.merge!(@filters)
         
         # See if there's input following the 'tasks' command.
+        # TODO This is the same code as in hotlist. It's also repetitive. Refactor me!
         context = parse_context(input)
         folder = parse_folder(input)
         goal = parse_goal(input)
         priority = parse_priority(input)
+        date = parse_date(input)
+        tag = parse_tag(input)
         
         # If there are, they override what we have set.
         if (folder != nil)
@@ -289,6 +312,14 @@ module Toodledo
         
         if (priority != nil)
           params.merge!({ :priority => priority })
+        end
+        
+        if (date != nil)
+          params.merge!({ :duedate => date })
+        end
+        
+        if (tag != nil)
+          params.merge!({ :tag => tag })
         end
                 
         tasks = session.get_tasks(params)
@@ -385,12 +416,14 @@ module Toodledo
       #
       # add @[Deep Space] !top *Action ^[For Great Justice] Take off every Zig
       #
-      def add_task(session, line)        
+      def add_task(session, line)
+        # TODO Yet again, essentially the same code as list and hotlist; Refactor        
         context = parse_context(line)
         folder = parse_folder(line)
         goal = parse_goal(line)
         priority = parse_priority(line)
         date = parse_date(line)
+        tag = parse_tag(line)
         title = parse_remainder(line)
         
         params = {}
@@ -412,6 +445,10 @@ module Toodledo
         
         if (date != nil)
           params.merge!({ :duedate => date })
+        end
+        
+        if (tag != nil)
+          params.merge!({ :tag => tag })
         end
         
         # If we got nothing but 'add' then ask for it explicitly.
@@ -492,10 +529,13 @@ module Toodledo
       def edit_task(session, input)  
         logger.debug("edit_task: #{input.inspect}")
         
+        # TODO And again... Refactor
         context = parse_context(input)
         folder = parse_folder(input)
         goal = parse_goal(input)
         priority = parse_priority(input)
+        date = parse_date(input)
+        tag = parse_tag(input)
         task_id = parse_remainder(input)
         
         logger.debug("edit_task: task_id = #{task_id}")
@@ -522,6 +562,14 @@ module Toodledo
         
         if (priority != nil)
           params.merge!({ :priority => priority })
+        end
+        
+        if (date != nil)
+          params.merge!({ :duedate => date })
+        end
+        
+        if (tag != nil)
+          params.merge!({ :tag => tag })
         end
         
         session.edit_task(task_id, params)

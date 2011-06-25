@@ -78,6 +78,39 @@ module Toodledo
 
         @client.add_task(@session, input)
       end
+
+      def test_add_task_with_duedate()
+
+        input = '<2011-03-04 This is a test'
+
+        args = { :duedate => "2011-03-04" }
+
+        @session.should_receive(:add_task).with('This is a test', args).and_return(1)
+        @client.should_receive(:print).with('Task 1 added.')
+        @client.add_task(@session, input)
+      end
+
+      def test_add_task_with_single_tag()
+
+        input = '%tag This is a test'
+
+        args = { :tag => %w{tag} }
+
+        @session.should_receive(:add_task).with('This is a test', args).and_return(1)
+        @client.should_receive(:print).with('Task 1 added.')
+        @client.add_task(@session, input)
+      end
+
+      def test_add_task_with_multiple_tags()
+
+        input = '%[tag1 tag2] This is a test'
+
+        args = { :tag => %w{tag1 tag2} }
+
+        @session.should_receive(:add_task).with('This is a test', args).and_return(1)
+        @client.should_receive(:print).with('Task 1 added.')
+        @client.add_task(@session, input)
+      end
       
       def test_add_folder()
         input = 'name'
@@ -109,7 +142,7 @@ module Toodledo
         
         @client.add_goal(@session, input)
       end
-
+ 
       def test_list_tasks_with_nothing()
 
         params = {
@@ -131,6 +164,7 @@ module Toodledo
       end
 
 
+      # TODO Is this really everything? What about duedate?
       def test_list_tasks_with_everything()
 
         params = {
@@ -147,7 +181,7 @@ module Toodledo
         task = Task.new(1234, params)
         tasks = [ task ]
         @session.should_receive(:get_tasks).and_return(tasks)
-        @client.should_receive(:print).with('<1234> -- !low *[test folder] @[test context] ^[test goal] repeat[biweekly] status[Next Action] starred tag[some tag] foo')
+        @client.should_receive(:print).with('<1234> -- !low *[test folder] @[test context] ^[test goal] repeat[biweekly] status[Next Action] starred %[some tag] foo')
 
         input = ''
         @client.list_tasks(@session, input)

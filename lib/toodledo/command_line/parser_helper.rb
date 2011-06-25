@@ -9,6 +9,7 @@ module Toodledo
     # 
     module ParserHelper
       
+      # TODO These regexps are highly repetitive. Refactor
       FOLDER_REGEXP = /\*((\w+)|\[(.*?)\])/
   
       GOAL_REGEXP = /\^((\w+)|\[(.*?)\])/
@@ -17,7 +18,9 @@ module Toodledo
       
       PRIORITY_REGEXP = /!(top|high|medium|low|negative)/
       
-      DATE_REGEXP = /\#((\w+)|\[(.*?)\])/
+      DATE_REGEXP = /\<(([^\[]\S*)|\[(.*?)\])/
+      
+      TAGS_REGEXP = /\%((\w+)|\[(.*?)\])/
       
       # Note that level must exist at the beginning of the line
       LEVEL_REGEXP = /^(life|medium|short)/
@@ -28,7 +31,8 @@ module Toodledo
         GOAL_REGEXP,
         CONTEXT_REGEXP, 
         PRIORITY_REGEXP,
-        DATE_REGEXP
+        DATE_REGEXP,
+        TAGS_REGEXP
       ]
   
       # Parses a context in the format @Context or @[Spaced Context]
@@ -58,9 +62,18 @@ module Toodledo
         return match_data if (match_data == nil)    
         return strip_brackets(match_data[1])
       end
+      
+      # Parses a list of tags in the format %[tag1 tag2 tag3]
+      # TODO Allow %tag1, tag2, tag3 ? (This is the format Toodledo's Twitter client uses)
+      def parse_tag(input)
+        match_data = TAGS_REGEXP.match(input)
+        return match_data if (match_data == nil)    
+        return strip_brackets(match_data[1]).split(/\s+/)
+      end
   
       # Parses priority in the format !priority (top, high, medium, low,
       # negative)
+      # TODO Refactor using data-driven design
       def parse_priority(input)
         match_data = PRIORITY_REGEXP.match(input)
         if (match_data == nil)

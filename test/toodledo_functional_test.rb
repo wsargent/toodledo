@@ -23,11 +23,36 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     # proxy = { 'host' => '127.0.0.1', 'port' => '8080'}
     proxy = nil
     
-    logger = Logger.new(STDOUT)
-    logger.level = Logger::DEBUG
+    @logger = Logger.new(STDOUT)
+    @logger.level = Logger::DEBUG
 
-    @session = Session.new(@user_id, @password, logger, @app_id)
+    @session = Session.new(@user_id, @password, @logger, @app_id)
     @session.connect(base_url, proxy)
+    remove_old_fixtures
+  end
+  
+  # In case an old test aborted and left crud in the testing account
+  def remove_old_fixtures
+    contexts = @session.get_contexts
+    contexts.each do |context|
+      @logger.debug "Remove old context #{context.name}, id #{context.server_id}"
+      @session.delete_context(context.server_id)
+    end
+    goals = @session.get_goals
+    goals.each do |goal|
+      @logger.debug "Remove old goal #{goal.name}, id #{goal.server_id}"
+      @session.delete_goal(goal.server_id)
+    end
+    folders = @session.get_folders
+    folders.each do |folder|
+      @logger.debug "Remove old folder #{folder.name}, id #{folder.server_id}"
+      @session.delete_folder(folder.server_id)
+    end
+    tasks = @session.get_tasks
+    tasks.each do |task|
+      @logger.debug "Remove old task #{task.title}, id #{task.server_id}"
+      @session.delete_task(task.server_id)
+    end
   end
   
   def teardown
@@ -120,6 +145,10 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
     
     folders = @session.get_folders()  
     assert_not_nil folders
+    @logger.debug "After add folder: #{folders.length} folders exist:"
+    folders.each_with_index do |folder, i|
+      @logger.debug "  #{i}. Folder #{folder.name}, id #{folder.server_id}"
+    end
     assert folders.length == 1
     folder = folders[0]
     

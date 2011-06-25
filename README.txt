@@ -58,6 +58,7 @@ for the client is as follows:
   ^Goal
   !Priority
   #Today
+  %tag
 
 You can encase the symbol with square brackets if there is a space involved:
 
@@ -66,6 +67,11 @@ You can encase the symbol with square brackets if there is a space involved:
   ^[Write Toodledo Ruby API]
   !top
   #[2011-03-18]
+  %[foo bar]
+
+You can only provide one folder, context, goal, priority, or date, but you can
+provide multiple tags, using the syntax shown above (i.e. foo and bar are two 
+separate tags).
   
 Let's use the command line client to list only the tasks you have in the office:
 
@@ -75,9 +81,9 @@ Now let's add a task with several symbols:
 
   toodledo add '*Action @Programming ^[Write Toodledo Ruby API] Write docs'
 
-Now let's add a date:
+Now let's add a different task with a date and tags:
 
-  toodledo add Write docs #Today
+  toodledo add Write more docs #Today %for_my_boss
 
 You can also edit tasks, using the task id.  This sets the folder to Someday:
 

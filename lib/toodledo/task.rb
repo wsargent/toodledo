@@ -55,6 +55,7 @@ module Toodledo
       return @num_children
     end
 
+    # TODO Repetitious. Refactor
     def initialize(id, params = {})
       @id = id
 
@@ -129,7 +130,7 @@ module Toodledo
       #   <parent>1122</parent>
       #   <children>0</children>
       #   <title>Buy Milk</title>
-      #   <tag>After work</tag>
+      #   <tag>After work</tag> # Actually, this counts as two tags
       #   <folder>123</folder>
       #   <context id="123">Home</context>
       #   <goal id="123">Get a Raise</goal>
@@ -223,7 +224,11 @@ module Toodledo
       title = el.elements['title'].text
       
       tag = el.elements['tag'].text
-      tag = nil if (tag == '0')
+      if tag == '0'
+        tag = nil
+      elsif tag
+        tag = tag.split(/\s+/)
+      end
       
       length = el.elements['length'].text
       length = nil if (length == '0')
@@ -276,7 +281,7 @@ module Toodledo
       #  <parent>#{@parent_id}</parent>
       #  <children>#{@children}</children>
       #  <title>#{@title}</title>
-      #  <tag>#{@tag}</tag>
+      #  <tag>#{@tag.join(' ')}</tag>
       #  <folder>#{@folder.server_id}</folder>
       #  <context id="#{@context.server_id}">#{@context.name}</context>
       #  <goal id="#{@goal.server_id}">#{@goal.name}</goal>

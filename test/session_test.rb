@@ -5,20 +5,28 @@ require 'rubygems'
 require 'test/unit'
 require 'flexmock/test_unit'
 require 'toodledo/session'
+require 'yaml'
 
 # 
 # This class tests that various handle methods in the session work as they're
 # supposed to.
 # 
 class SessionTest < Test::Unit::TestCase
+  
+  CONFIG_FILE = ENV['HOME'] + '/.toodledo/user-config.yml'
 
-  def setup    
+  def setup
     @session = Toodledo::Session.new('userid', 'password')    
     
     # mock out the get_token & call methods.
-    flexmock(@session, :get_token => 'token')
+    mock_connection(@session)
     
     @session.connect()
+  end
+  
+  def mock_connection(session)
+    flexmock(session, :get_token => 'token')
+    flexmock(session, :get_server_info => {:token_expires=>4*60.0})
   end
   
   def teardown
@@ -27,7 +35,7 @@ class SessionTest < Test::Unit::TestCase
   
   def test_handle_app_id_in_session
     new_sess = Toodledo::Session.new('userid', 'password', nil, 'appid')
-    flexmock(new_sess, :get_token => 'token')
+    mock_connection(new_sess)
     new_sess.connect()
     assert_not_nil new_sess.app_id
   end
@@ -202,6 +210,7 @@ class SessionTest < Test::Unit::TestCase
   #  
   #  handle_repeat
   #  handle_priority
+  #  handle_tag
 
 
 end

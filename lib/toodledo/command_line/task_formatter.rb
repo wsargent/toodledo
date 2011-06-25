@@ -9,6 +9,7 @@ module Toodledo
   
         msg = "<#{task.server_id}> -- #{fancyp}"
   
+        # TODO Only include [ ] if needed
         if (task.folder != Folder::NO_FOLDER)
           msg += " *[#{task.folder.name}]"
         end
@@ -27,7 +28,7 @@ module Toodledo
   
         if (task.duedate != nil)
           fmt = '%m/%d/%Y %I:%M %p'
-          msg += " \#[#{task.duedatemodifier}#{task.duedate.strftime(fmt)}]"
+          msg += " <[#{task.duedatemodifier}#{task.duedate.strftime(fmt)}]"
         end
         
         if (task.startdate != nil)
@@ -44,7 +45,7 @@ module Toodledo
         end
   
         if (task.tag != nil)
-          msg += " tag[#{task.tag}]"
+          msg += " %[#{task.tag}]"
         end
         
         if (task.parent_id != nil)
@@ -72,6 +73,7 @@ module Toodledo
         return msg
       end
       
+      # TODO Refactor using symbols -- so much simpler to convert
       def readable_priority(priority)
         case priority
           when Priority::TOP
