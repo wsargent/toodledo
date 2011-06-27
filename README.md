@@ -1,9 +1,9 @@
-= toodledo
+# toodledo
 
-* http://toodledo.rubyforge.org
-* mailto:will@tersesystems.com
+* https://github.com/wsargent/toodledo
+* mailto:will.sargent@gmail.com
 
-== DESCRIPTION:
+## DESCRIPTION:
 
 This is a Ruby API and client for http://toodledo.com, a task management 
 website. It implements all of the calls from Toodledo's developer API, and 
@@ -17,7 +17,7 @@ as part of a web application.  Custom private RSS feed?  Want to have the Mac
 read out your top priority?  Input tasks through Quicksilver?  Print out
 tasks with a BetaBrite?  It can all happen.
 
-== FEATURES/PROBLEMS:
+## FEATURES/PROBLEMS:
 
 * Command line client interface
 * Interactive client interface
@@ -25,9 +25,9 @@ tasks with a BetaBrite?  It can all happen.
 * Supports Proxy and SSL usage
 * Easy configuration and automation (Quicksilver / Scripts / Automator)
 
-== SYNOPSIS:
+## SYNOPSIS
 
-=== SETUP:
+### SETUP
 
 The first thing you should do is open up your browser and go to:
 
@@ -37,13 +37,13 @@ and retrieve your userid.  You will need this for setup.
 
 Build the gem. 'gem build toodledo.gemspec'
 
-Then, install toodledo.  This is either 'gem install toodledo-1.3.6.gem' or 
-'sudo gem install toodledo-1.3.6.gem' depending on your platform.
+Then, install toodledo.  This is either 'gem install toodledo-1.3.7.gem' or
+'sudo gem install toodledo-1.3.7.gem' depending on your platform.
 
 Then, type 'toodledo setup' and enter your userid and password in
 the spaces provided.  Then save the file, and you're good to go.
 
-=== COMMAND LINE:
+### COMMAND LINE
  
 You can add tasks.  The simplest form is here:
 
@@ -57,8 +57,8 @@ for the client is as follows:
   @Context
   ^Goal
   !Priority
-  #Today
-  %tag
+  #DueDate
+  %Tags
 
 You can encase the symbol with square brackets if there is a space involved:
 
@@ -66,7 +66,7 @@ You can encase the symbol with square brackets if there is a space involved:
   @[Someday / Maybe]
   ^[Write Toodledo Ruby API]
   !top
-  #[2011-03-18]
+  #[2011-03-18] or #[today]
   %[foo bar]
 
 You can only provide one folder, context, goal, priority, or date, but you can
@@ -83,7 +83,7 @@ Now let's add a task with several symbols:
 
 Now let's add a different task with a date and tags:
 
-  toodledo add Write more docs #Today %for_my_boss
+  toodledo add Write more docs #today %for_my_boss
 
 You can also edit tasks, using the task id.  This sets the folder to Someday:
 
@@ -94,7 +94,7 @@ And finally you can complete or delete tasks, again using the task id.
   toodledo complete 15934131
   toodledo delete 15934131
 
-=== INTERACTIVE MODE:
+### INTERACTIVE MODE
 
 Toodledo also comes with an interactive mode that is used if no arguments are 
 found:
@@ -102,14 +102,14 @@ found:
   toodledo 
   > add This is a test
   
-You can type help at the prompt for a complete list of commands.  The client 
+You can type 'help' at the prompt for a complete list of commands.  The client
 makes for a nice way to enter in tasks as you think of them.
 
 The client will also allow you to set up filters.  Filters are added with
 the symbols, so in interactive mode
 
   filter @Office *Action
-  list
+  tasks
 
 Then it produces the same results as:
 
@@ -132,7 +132,7 @@ this instead:
   session = Session.new(userid, password)
   session.connect()
 
-== REQUIREMENTS:
+## REQUIREMENTS
 
 * A connection to the Internet
 * An account to http://toodledo.com
@@ -141,11 +141,11 @@ this instead:
 * highline
 * rubygems
 
-== INSTALL:
+## INSTALL
 
 * sudo gem install toodledo
 * toodledo setup (sets up the YAML file with your credentials)
 * toodledo
 
-== LICENSE:
+## LICENSE:
 		   GPL v3
