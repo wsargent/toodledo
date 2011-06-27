@@ -110,10 +110,12 @@ module Toodledo
     def disconnect()
       logger.debug("disconnect()") if logger
       
-      token_path = get_token_file(user_id)
-      if token_path and expired?
-        logger.debug("deleting token path()") if logger        
-        File.delete(token_path)
+      if expired?
+        token_path = get_token_file(user_id)
+        if token_path
+          logger.debug("deleting token path(#{token_path})") if logger
+          File.delete(token_path)
+        end
       end
       
       @key = nil
