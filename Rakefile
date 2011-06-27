@@ -1,24 +1,45 @@
 # -*- ruby -*-
 
-require 'rubygems'
-require 'hoe'
-$:.unshift(File.dirname(__FILE__) + "/lib")
-require 'toodledo'
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gem|
+    # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
+    gem.name = "toodledo"
+    gem.author = 'Will Sargent'
+    gem.email = 'will.sargent@gmail.com'
+    gem.summary = 'A command line client and API to Toodledo'
+    gem.description = <<-EOF
+This is a Ruby API and client for http://toodledo.com, a task management
+website. It implements all of the calls from Toodledo's developer API, and
+provides a nice wrapper around the functionality.
 
-Hoe.spec('toodledo') do |p|
-  p.rubyforge_name = 'toodledo'
-  p.version = Toodledo::VERSION
-  p.author = 'Will Sargent'
-  p.email = 'will.sargent@gmail.com'
-  p.summary = 'A command line client and API to Toodledo'
-  p.description = 'A command line client and API to Toodledo'
-  p.url = "http://gemcutter.org/gems/toodledo"
-  p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
-  p.rsync_args << ' --exclude=statsvn/'
-  p.test_globs = ["test/**/*_test.rb"]
-  p.extra_deps << ['cmdparse', '>= 0']
-  p.extra_deps << ['highline', '>= 0']
-  p.extra_dev_deps << [ 'flexmock', '>= 0']
+The client allows you to work with Toodledo from the command line. It will
+work in either interactive or command line mode.
+
+You can also use the client in your shell scripts, or use the API directly
+as part of a web application.  Custom private RSS feed?  Want to have the Mac
+read out your top priority?  Input tasks through Quicksilver?  Print out
+tasks with a BetaBrite?  It can all happen.
+    EOF
+    gem.homepage = "http://github.com/wsargent/toodledo"
+    gem.authors = ["Will Sargent"]
+
+    gem.executables = [ 'bin/toodledo' ]
+
+    gem.add_dependency('cmdparse')
+    gem.add_dependency('highline')
+
+    gem.add_development_dependency('flexmock')
+  end
+
+  # Set up publishing to rubygems.
+  #Jeweler::RubygemsDotOrgTasks.new
+
+  # To publish to gemcutter, do the following...
+  # rake gemcutter:release
+  Jeweler::GemcutterTasks.new
+rescue LoadError
+  puts "Cannot load jeweler"
 end
 
 # vim: syntax=Ruby

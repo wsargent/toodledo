@@ -29,19 +29,18 @@ tasks with a BetaBrite?  It can all happen.
 
 ### SETUP
 
-The first thing you should do is open up your browser and go to:
+You will need an account on Toodledo.  Once you have that and you're logged in, go to:
 
-  http://www.toodledo.com/info/api_doc.php
+    http://www.toodledo.com/info/api_doc.php
 
 and retrieve your userid.  You will need this for setup.
 
-Build the gem. 'gem build toodledo.gemspec'
+Then, type
 
-Then, install toodledo.  This is either 'gem install toodledo-1.3.7.gem' or
-'sudo gem install toodledo-1.3.7.gem' depending on your platform.
+    gem install toodledo
+    toodledo setup
 
-Then, type 'toodledo setup' and enter your userid and password in
-the spaces provided.  Then save the file, and you're good to go.
+and enter your userid and password in the spaces provided.  Then save the file, and you're good to go.
 
 ### COMMAND LINE
  
