@@ -9,9 +9,9 @@ Hoe.spec('toodledo') do |p|
   p.rubyforge_name = 'toodledo'
   p.version = Toodledo::VERSION
   p.author = 'Will Sargent'
-  p.email = 'will@tersesystems.com'
+  p.email = 'will.sargent@gmail.com'
   p.summary = 'A command line client and API to Toodledo'
-  p.description = p.paragraphs_of('README.txt', 2..5).join("\n\n")
+  p.description = 'A command line client and API to Toodledo'
   p.url = "http://gemcutter.org/gems/toodledo"
   p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
   p.rsync_args << ' --exclude=statsvn/'
