@@ -49,7 +49,7 @@ class ParserHelperTest < Test::Unit::TestCase
   end
 
   def test_find_duedate
-    input = "<duedate @Context ^Goal blah blah blah"
+    input = "#duedate @Context ^Goal blah blah blah"
     
     duedate = parse_date(input)
     
@@ -59,7 +59,7 @@ class ParserHelperTest < Test::Unit::TestCase
   # TODO Separate parse_date from parse_duedate?
   def test_find_harder_duedate
     
-    input = "Some Text @[Harder Context] <[Harder duedate] ^[Harder Goal]"
+    input = "Some Text @[Harder Context] #[Harder duedate] ^[Harder Goal]"
     
     duedate = parse_date(input)
     

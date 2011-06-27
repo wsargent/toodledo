@@ -81,7 +81,7 @@ module Toodledo
 
       def test_add_task_with_duedate()
 
-        input = '<2011-03-04 This is a test'
+        input = '#2011-03-04 This is a test'
 
         args = { :duedate => "2011-03-04" }
 
@@ -183,9 +183,9 @@ module Toodledo
           :context => Context.new(345, 'test context'),
           :goal => Goal.new(342341, 0, 0, 'test goal'),
           :repeat => Repeat::BIWEEKLY,
-          :duedatemodifier => 0, # Due By
+          :duedatemodifier => 1, # Due On
           :duedate => Time.local(2011,06,25,13,45,56),
-          :startdate =>Date.new(2010,05,23),
+          :startdate => Date.new(2010,05,23),
           :status => Status::NEXT_ACTION,
           :star => true,
           :tag => 'some tag',
@@ -199,7 +199,7 @@ module Toodledo
         tasks = [ parent_task, child_task ]
         @session.should_receive(:get_tasks).and_return(tasks)
         @client.should_receive(:print).with("<54321> -- !high bar").once.ordered
-        @client.should_receive(:print).with("<1234> -- !low *[test folder] @[test context] ^[test goal] repeat[biweekly] <[0:06/25/2011 01:45 PM] startdate[05/23/2010] status[Next Action] starred %[some tag] parent[bar] length[125] timer[423] children[5] foo").once.ordered
+        @client.should_receive(:print).with("<1234> -- !low *[test folder] @[test context] ^[test goal] repeat[biweekly] #[=06/25/2011 01:45 PM] startdate[05/23/2010] status[Next Action] starred %[some tag] parent[bar] length[125] timer[423] children[5] foo").once.ordered
 
         input = ''
         @client.list_tasks(@session, input)

@@ -2,7 +2,12 @@
 module Toodledo
   module CommandLine    
     class TaskFormatter
-      
+
+      DUEDATE_BY = 0
+      DUEDATE_ON = 1
+      DUEDATE_AFTER = 2
+      DUEDATE_OPTIONALLY = 3
+
       # Formats the task for a command line.
       def format(task)
         fancyp = '!' + readable_priority(task.priority)
@@ -28,7 +33,7 @@ module Toodledo
   
         if (task.duedate != nil)
           fmt = '%m/%d/%Y %I:%M %p'
-          msg += " <[#{task.duedatemodifier}:#{task.duedate.strftime(fmt)}]"
+          msg += " #[#{readable_duedatemodifier(task.duedatemodifier)}#{task.duedate.strftime(fmt)}]"
         end
         
         if (task.startdate != nil)
@@ -88,6 +93,23 @@ module Toodledo
             return 'negative'
           else
             return ''
+        end
+      end
+
+      def readable_duedatemodifier(duedate_modifier)
+        # The modifier is passed in as [0..3] but may come back as
+        # <duedate modifier='?'>2011-06-30</duedate>
+        case duedate_modifier
+          when DUEDATE_BY then
+            return ''
+          when DUEDATE_ON then
+            return '='
+          when DUEDATE_AFTER then
+            return '>'
+          when DUEDATE_OPTIONALLY then
+            return '?'
+          else
+            return duedate_modifier
         end
       end
       

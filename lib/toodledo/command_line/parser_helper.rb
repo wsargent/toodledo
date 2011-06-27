@@ -18,7 +18,7 @@ module Toodledo
       
       PRIORITY_REGEXP = /!(top|high|medium|low|negative)/
       
-      DATE_REGEXP = /\<(([^\[]\S*)|\[(.*?)\])/
+      DATE_REGEXP = /\#(([^\[]\S*)|\[(.*?)\])/
       
       TAGS_REGEXP = /\%((\w+)|\[(.*?)\])/
       
@@ -56,7 +56,7 @@ module Toodledo
         return strip_brackets(match_data[1])
       end
       
-      # Parses a date in the format <[2011-03-17]
+      # Parses a date in the format #[2011-03-17]
       def parse_date(input)
         match_data = DATE_REGEXP.match(input)
         return match_data if (match_data == nil)    
