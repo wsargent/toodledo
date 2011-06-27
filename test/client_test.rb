@@ -1,8 +1,4 @@
-$:.unshift File.join(File.dirname(__FILE__),'..','lib')
-
-require 'test/unit'
-require 'toodledo/command_line/client'
-require 'flexmock/test_unit'
+require 'helper'
 
 module Toodledo
   module CommandLine

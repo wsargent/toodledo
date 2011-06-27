@@ -2,11 +2,13 @@
 # The top level Toodledo module.  This does very little that is
 # interesting.  You probably want to look at Toodledo::Session
 #
+
+require 'toodledo/version'
+
 module Toodledo
 
-  # Required for gem  
-  VERSION = '1.3.7'
-  
+  VERSION = ::Toodledo::Version::VERSION
+
   # Returns the configuration object.
   def self.get_config()
     return @@config

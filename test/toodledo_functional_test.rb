@@ -1,7 +1,4 @@
-
-$: << File.expand_path(File.dirname(__FILE__) + "/../lib")
-require 'test/unit'
-require 'toodledo'
+require 'helper'
 
 =begin
   This is a functional test suite that runs against Toodledo and verifies that

@@ -1,14 +1,4 @@
-$: << File.expand_path(File.dirname(__FILE__) + "/../lib")
-
-
-require 'rubygems'
-require 'test/unit'
-require 'flexmock/test_unit'
-require 'toodledo/session'
-require 'yaml'
-require 'toodledo/repeat'
-require 'toodledo/priority'
-require 'toodledo/status'
+require 'helper'
 
 # 
 # This class tests that various handle methods in the session work as they're

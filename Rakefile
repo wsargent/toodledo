@@ -1,8 +1,14 @@
 # -*- ruby -*-
 
+require 'rubygems'
+require 'rake'
+
 begin
   require 'jeweler'
+  require 'lib/toodledo/version'
   Jeweler::Tasks.new do |gem|
+    gem.version = Toodledo::Version::VERSION
+
     # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
     gem.name = "toodledo"
     gem.author = 'Will Sargent'
@@ -40,6 +46,25 @@ tasks with a BetaBrite?  It can all happen.
   Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Cannot load jeweler"
+end
+
+require 'rake/testtask'
+Rake::TestTask.new(:test) do |test|
+  test.libs << 'lib' << 'test'
+  test.pattern = 'test/**/*_test.rb'
+  test.verbose = true
+end
+
+task :default => :test
+
+require 'rake/rdoctask'
+Rake::RDocTask.new do |rdoc|
+  version = File.exist?('VERSION') ? File.read('VERSION') : ""
+
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "toodledo-jeweler #{version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
 # vim: syntax=Ruby

@@ -1,9 +1,4 @@
-$: << File.expand_path(File.dirname(__FILE__) + "/../lib")
-
-require 'test/unit'
-require 'toodledo'
-require 'toodledo/command_line/parser_helper'
-
+require 'helper'
 
 #
 # Tests the parser helper
