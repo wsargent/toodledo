@@ -23,7 +23,7 @@ read out your top priority?  Input tasks through Quicksilver?  Print out
 tasks with a BetaBrite?  It can all happen.
 }
   s.email = %q{will.sargent@gmail.com}
-  s.executables = ["bin/toodledo"]
+  s.executables = ["toodledo"]
   s.extra_rdoc_files = [
     "README.md"
   ]
