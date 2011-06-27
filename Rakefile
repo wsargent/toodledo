@@ -24,7 +24,7 @@ tasks with a BetaBrite?  It can all happen.
     gem.homepage = "http://github.com/wsargent/toodledo"
     gem.authors = ["Will Sargent"]
 
-    gem.executables = [ 'bin/toodledo' ]
+    gem.executables = [ 'toodledo' ]
 
     gem.add_dependency('cmdparse')
     gem.add_dependency('highline')
