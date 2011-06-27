@@ -4,6 +4,7 @@
 module Toodledo
   class Repeat
     
+    # TODO Refactor
     NONE = 0
     WEEKLY = 1
     MONTHLY = 2
@@ -32,6 +33,7 @@ module Toodledo
       REPEAT_ARRAY.each{|value| yield(value)}
     end
     
+    # TODO replace with include?
     def self.valid?(input)
       for repeat in REPEAT_ARRAY
         if (repeat == input) 
