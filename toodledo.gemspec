@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.version = "1.3.7"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Will Sargent"]
-  s.date = %q{2011-06-27}
+  s.authors = [%q{Will Sargent}]
+  s.date = %q{2011-06-28}
   s.description = %q{This is a Ruby API and client for http://toodledo.com, a task management
 website. It implements all of the calls from Toodledo's developer API, and
 provides a nice wrapper around the functionality.
@@ -23,7 +23,7 @@ read out your top priority?  Input tasks through Quicksilver?  Print out
 tasks with a BetaBrite?  It can all happen.
 }
   s.email = %q{will.sargent@gmail.com}
-  s.executables = ["toodledo"]
+  s.executables = [%q{toodledo}]
   s.extra_rdoc_files = [
     "README.md"
   ]
@@ -74,23 +74,35 @@ tasks with a BetaBrite?  It can all happen.
     "toodledo.gemspec"
   ]
   s.homepage = %q{http://github.com/wsargent/toodledo}
-  s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.7.2}
+  s.require_paths = [%q{lib}]
+  s.rubygems_version = %q{1.8.5}
   s.summary = %q{A command line client and API to Toodledo}
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
+      s.add_runtime_dependency(%q<jeweler>, [">= 0"])
+      s.add_runtime_dependency(%q<highline>, [">= 0"])
+      s.add_runtime_dependency(%q<cmdparse>, [">= 0"])
+      s.add_runtime_dependency(%q<flexmock>, [">= 0"])
       s.add_runtime_dependency(%q<cmdparse>, [">= 0"])
       s.add_runtime_dependency(%q<highline>, [">= 0"])
       s.add_development_dependency(%q<flexmock>, [">= 0"])
     else
+      s.add_dependency(%q<jeweler>, [">= 0"])
+      s.add_dependency(%q<highline>, [">= 0"])
+      s.add_dependency(%q<cmdparse>, [">= 0"])
+      s.add_dependency(%q<flexmock>, [">= 0"])
       s.add_dependency(%q<cmdparse>, [">= 0"])
       s.add_dependency(%q<highline>, [">= 0"])
       s.add_dependency(%q<flexmock>, [">= 0"])
     end
   else
+    s.add_dependency(%q<jeweler>, [">= 0"])
+    s.add_dependency(%q<highline>, [">= 0"])
+    s.add_dependency(%q<cmdparse>, [">= 0"])
+    s.add_dependency(%q<flexmock>, [">= 0"])
     s.add_dependency(%q<cmdparse>, [">= 0"])
     s.add_dependency(%q<highline>, [">= 0"])
     s.add_dependency(%q<flexmock>, [">= 0"])

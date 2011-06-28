@@ -39,11 +39,7 @@ tasks with a BetaBrite?  It can all happen.
   end
 
   # Set up publishing to rubygems.
-  #Jeweler::RubygemsDotOrgTasks.new
-
-  # To publish to gemcutter, do the following...
-  # rake gemcutter:release
-  Jeweler::GemcutterTasks.new
+  Jeweler::RubygemsDotOrgTasks.new
 rescue LoadError
   puts "Cannot load jeweler"
 end
