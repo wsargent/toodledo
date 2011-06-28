@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{toodledo}
-  s.version = "1.3.7"
+  s.version = "1.3.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Will Sargent}]
@@ -29,10 +29,8 @@ tasks with a BetaBrite?  It can all happen.
   ]
   s.files = [
     "History.txt",
-    "Manifest.txt",
     "README.md",
     "Rakefile",
-    "VERSION",
     "bin/toodledo",
     "lib/toodledo.rb",
     "lib/toodledo/command_line/add_command.rb",
