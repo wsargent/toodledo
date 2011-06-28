@@ -1,3 +1,7 @@
+== 1.3.8
+
+* Rubygems does not allow you to publish the same version, even if yanked.  Thanks SO much.
+
 == 1.3.7
 
 * do not nuke the token on disconnect *unless* it is too old.  avoids requesting too many tokens. (ahoward / da18e37aa61abf6a07fa)

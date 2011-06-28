@@ -82,27 +82,15 @@ tasks with a BetaBrite?  It can all happen.
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<jeweler>, [">= 0"])
-      s.add_runtime_dependency(%q<highline>, [">= 0"])
-      s.add_runtime_dependency(%q<cmdparse>, [">= 0"])
-      s.add_runtime_dependency(%q<flexmock>, [">= 0"])
       s.add_runtime_dependency(%q<cmdparse>, [">= 0"])
       s.add_runtime_dependency(%q<highline>, [">= 0"])
       s.add_development_dependency(%q<flexmock>, [">= 0"])
     else
-      s.add_dependency(%q<jeweler>, [">= 0"])
-      s.add_dependency(%q<highline>, [">= 0"])
-      s.add_dependency(%q<cmdparse>, [">= 0"])
-      s.add_dependency(%q<flexmock>, [">= 0"])
       s.add_dependency(%q<cmdparse>, [">= 0"])
       s.add_dependency(%q<highline>, [">= 0"])
       s.add_dependency(%q<flexmock>, [">= 0"])
     end
   else
-    s.add_dependency(%q<jeweler>, [">= 0"])
-    s.add_dependency(%q<highline>, [">= 0"])
-    s.add_dependency(%q<cmdparse>, [">= 0"])
-    s.add_dependency(%q<flexmock>, [">= 0"])
     s.add_dependency(%q<cmdparse>, [">= 0"])
     s.add_dependency(%q<highline>, [">= 0"])
     s.add_dependency(%q<flexmock>, [">= 0"])
