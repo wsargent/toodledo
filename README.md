@@ -59,6 +59,13 @@ for the client is as follows:
     #DueDate
     %Tags
 
+Additionally, a * _not_ followed immediately by a folder name
+indicates that the task should be starred.
+
+For adding tasks, you may specify Priority as either a word:
+top,high,medium,low,negative  or as a number: -1,0,1,2,3
+
+
 You can encase the symbol with square brackets if there is a space involved:
 
     *[Blue Sky]
