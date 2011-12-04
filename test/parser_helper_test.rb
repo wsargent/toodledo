@@ -158,4 +158,80 @@ class ParserHelperTest < Test::Unit::TestCase
     assert_equal(Goal::SHORT_LEVEL, level, 'level not found')
   end
   
+  def test_find_star()
+    input = '* this is a starred task'
+    star = parse_star(input)
+    folder = parse_folder(input)
+    assert_equal(star, true)
+    assert_equal(folder, nil)
+  end
+
+  def test_find_star2()
+    input = 'this is also a starred task *'
+    star = parse_star(input)
+    folder = parse_folder(input)
+    assert_equal(star, true)
+    assert_equal(folder, nil)
+  end
+
+  def test_find_star3()
+    input = 'this is not a starred task *foo'
+    star = parse_star(input)
+    folder = parse_folder(input)
+    assert_equal(star, false)
+    assert_equal(folder, "foo")
+  end
+
+  def test_find_star4()
+    input = '* but this is not a starred task *foo'
+    star = parse_star(input)
+    folder = parse_folder(input)
+    assert_equal(star, true)
+    assert_equal(folder, "foo")
+  end
+
+  def test_find_priority_with_numbers1
+    input = "!3 I AM VERY IMPORTANT!"
+       
+    priority = parse_priority(input)
+       
+    assert(priority == Priority::TOP, "Value not found")
+  end
+
+  def test_find_priority_with_numbers2
+    input = "I AM QUITE IMPORTANT! !2"
+       
+    priority = parse_priority(input)
+       
+    assert(priority == Priority::HIGH, "Value not found")
+  end
+
+  def test_find_priority_with_numbers3
+    input = "!1 I AM KINDA IMPORTANT!"
+       
+    priority = parse_priority(input)
+       
+    assert(priority == Priority::MEDIUM, "Value not found")
+  end
+
+
+  def test_find_priority_with_numbers4
+    input = "!0 I AM NOT VERY IMPORTANT!"
+       
+    priority = parse_priority(input)
+       
+    assert(priority == Priority::LOW, "Value not found")
+  end
+
+
+  def test_find_priority_with_numbers5
+    input = "!-1 I AM MAXIMALLY UNIMPORTANT!"
+       
+    priority = parse_priority(input)
+       
+    assert(priority == Priority::NEGATIVE, "Value not found")
+  end
+
+
+
 end
