@@ -16,18 +16,21 @@ module Toodledo
   
       CONTEXT_REGEXP = /\@((\w+)|\[(.*?)\])/
       
-      PRIORITY_REGEXP = /!(top|high|medium|low|negative)/
+      PRIORITY_REGEXP = /!(top|high|medium|low|negative|-1|0|1|2|3)/
       
       DATE_REGEXP = /\#(([^\[]\S*)|\[(.*?)\])/
       
       TAGS_REGEXP = /\%((\w+)|\[(.*?)\])/
       
+      STAR_REGEXP = /\*\s+|\*$/
+
       # Note that level must exist at the beginning of the line
       LEVEL_REGEXP = /^(life|medium|short)/
       
       # Don't include level regexp
       REGEXP_LIST = [ 
         FOLDER_REGEXP, 
+        STAR_REGEXP,
         GOAL_REGEXP,
         CONTEXT_REGEXP, 
         PRIORITY_REGEXP,
@@ -92,6 +95,17 @@ module Toodledo
           return Toodledo::Priority::LOW
         when 'negative'
           return Toodledo::Priority::NEGATIVE
+        when '-1'
+          return Toodledo::Priority::NEGATIVE
+        when '0'
+          return Toodledo::Priority::LOW
+        when '1'
+          return Toodledo::Priority::MEDIUM
+        when '2'
+          return Toodledo::Priority::HIGH
+        when '3'
+          return Toodledo::Priority::TOP
+
         else
           return nil
         end
@@ -116,7 +130,17 @@ module Toodledo
         end
       end
   
-      # Returns the bit after we've looked for *Folder, @Context & ^Goal
+      def parse_star(input)
+        match_data = STAR_REGEXP.match(input)
+        if (match_data == nil)
+          return false
+        else
+          return true
+        end
+      end         
+
+
+      # Returns the bit after we've looked for *Folder, @Context & ^Goal & star
       def parse_remainder(line)
         input = line
 
@@ -129,6 +153,7 @@ module Toodledo
     
         return input
       end
+      
   
       # Strips a string of [ and ] characters
       def strip_brackets(inword)    

@@ -419,13 +419,14 @@ module Toodledo
       def add_task(session, line)
         # TODO Yet again, essentially the same code as list and hotlist; Refactor        
         context = parse_context(line)
+        star = parse_star(line) # ctanis
         folder = parse_folder(line)
         goal = parse_goal(line)
         priority = parse_priority(line)
         date = parse_date(line)
         tag = parse_tag(line)
         title = parse_remainder(line)
-        
+
         params = {}
         if (priority != nil)
           params.merge!({ :priority => priority })
@@ -449,6 +450,10 @@ module Toodledo
         
         if (tag != nil)
           params.merge!({ :tag => tag })
+        end
+
+        if (star)               # boolean
+          params.merge!({ :star => true })
         end
         
         # If we got nothing but 'add' then ask for it explicitly.
