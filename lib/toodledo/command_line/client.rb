@@ -18,6 +18,9 @@ require 'toodledo/command_line/add_command'
 # READ
 require 'toodledo/command_line/hotlist_command'
 require 'toodledo/command_line/list_tasks_command'
+require 'toodledo/command_line/list_today_command'
+require 'toodledo/command_line/list_tomorrow_command'
+require 'toodledo/command_line/list_overdue_command'
 require 'toodledo/command_line/list_tasks_by_context_command'
 require 'toodledo/command_line/list_folders_command'
 require 'toodledo/command_line/list_contexts_command'
@@ -333,7 +336,50 @@ module Toodledo
           print @formatters[:task].format(task)
         end
       end
-      
+     
+      # 
+      # Print all tasks with the due date in the given time range
+      #
+      def list_tasks_by_timerange(session, date1, date2)
+          params = { :notcomp => true }
+	  tasks = session.get_tasks(params)
+	  for task in tasks
+	      if ((task.duedate != nil) and ((date2 == nil) or task.duedate <= date2) and ((date1 == nil) or (task.duedate >= date1)))
+    		  print @formatters[:task].format(task)
+	      end
+	  end
+      end
+
+      #
+      # Print tasks for today
+      #
+      def list_today_tasks(session, line)
+	  dtnow = DateTime.now
+	  tday_stop = DateTime.new(dtnow.year, dtnow.month, dtnow.day, 23, 59, 59)
+	  list_tasks_by_timerange(session, nil, tday_stop)
+      end
+
+      #
+      # Print tasks for tomorrow
+      #
+      def list_tomorrow_tasks(session, line)
+	  dtnow = DateTime.now
+	  dt = dtnow + 1
+	  dtstart = DateTime.new(dt.year, dt.month, dt.day, 0, 0, 0)
+	  dtstop = DateTime.new(dt.year, dt.month, dt.day, 23, 59, 59)
+	  list_tasks_by_timerange(session, dtstart, dtstop)
+      end
+
+      #
+      # Print overdue tasks
+      #
+      def list_overdue_tasks(session, line)
+	  dt = DateTime.now
+	  dty = dt - 1
+	  dtstop = DateTime.new(dty.year, dty.month, dty.day, 23, 59, 59)
+	  list_tasks_by_timerange(session, nil, dtstop)
+      end
+
       #
       # Prints all active tasks nested by context.
       #
@@ -385,7 +431,6 @@ module Toodledo
       # Lists the contexts.
       #
       def list_contexts(session, input)
-        params = { }
         
         contexts = session.get_contexts()
         
@@ -398,7 +443,6 @@ module Toodledo
       # Lists the folders.
       #
       def list_folders(session, input)
-        params = { }
         
         folders = session.get_folders()
         
@@ -692,6 +736,9 @@ module Toodledo
         print "goals        Shows all goals"
         print "contexts     Shows all contexts"
         print "tasks        Shows tasks ('tasks *Action @Home')"
+        print "today        Shows tasks for today"
+        print "tomorrow     Shows tasks for tomorrow"
+        print "overdue      Shows overdue tasks"
         print 
         print "add          Adds task ('add *Action @Home Eat breakfast')"
         print "  folder     Adds a folder ('add folder MyFolder')"
@@ -769,6 +816,18 @@ module Toodledo
           line = clean(/^(tasks)/, input)
           list_tasks(session, line)
           
+	  when /^today/
+          line = clean(/^(today)/, input)
+          list_today_tasks(session, line)
+
+	  when /^tomorrow/
+          line = clean(/^(tomorrow)/, input)
+          list_tomorrow_tasks(session, line)
+
+	  when /^overdue/
+          line = clean(/^(overdue)/, input)
+          list_overdue_tasks(session, line)
+          
           when /^folders/
           line = clean(/^folders/, input)
           list_folders(session,line)
@@ -835,6 +894,11 @@ module Toodledo
         cmd.add_command(AddTaskCommand.new(self))
         
         cmd.add_command(ListTasksCommand.new(self))
+        
+	cmd.add_command(ListTodayCommand.new(self))
+        cmd.add_command(ListTomorrowCommand.new(self))
+        cmd.add_command(ListOverdueCommand.new(self))
+
         cmd.add_command(ListFoldersCommand.new(self))
         cmd.add_command(ListGoalsCommand.new(self))
         cmd.add_command(ListContextsCommand.new(self))
