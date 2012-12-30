@@ -340,44 +340,49 @@ module Toodledo
       # 
       # Print all tasks with the due date in the given time range
       #
-      def list_tasks_by_timerange(session, date1, date2)
-          params = { :notcomp => true }
-	  tasks = session.get_tasks(params)
-	  for task in tasks
-	      if ((task.duedate != nil) and ((date2 == nil) or task.duedate <= date2) and ((date1 == nil) or (task.duedate >= date1)))
-    		  print @formatters[:task].format(task)
-	      end
-	  end
+      def list_tasks_by_beforeafter(session, before, after)
+        params = { :notcomp => true }
+        if (before) 
+          params.merge!({ :before => before.strftime("%Y-%m-%d") })
+        end
+        
+        if (after)
+          params.merge!({ :after =>  after.strftime("%Y-%m-%d") })
+        end
+        
+	tasks = session.get_tasks(params)
+	for task in tasks
+          print @formatters[:task].format(task)
+        end
       end
 
       #
       # Print tasks for today
       #
       def list_today_tasks(session, line)
-	  dtnow = DateTime.now
-	  tday_stop = DateTime.new(dtnow.year, dtnow.month, dtnow.day, 23, 59, 59)
-	  list_tasks_by_timerange(session, nil, tday_stop)
+        tomorrow = Date.today + 1
+        yesterday = Date.today - 1   
+        # show us everything before tomorrow, but after yesterday.
+        list_tasks_by_beforeafter(session, tomorrow, yesterday)
       end
 
       #
       # Print tasks for tomorrow
       #
       def list_tomorrow_tasks(session, line)
-	  dtnow = DateTime.now
-	  dt = dtnow + 1
-	  dtstart = DateTime.new(dt.year, dt.month, dt.day, 0, 0, 0)
-	  dtstop = DateTime.new(dt.year, dt.month, dt.day, 23, 59, 59)
-	  list_tasks_by_timerange(session, dtstart, dtstop)
+        today = Date.today
+        twodaysfromnow = today + 2
+        # show us tasks before two days from now, but after today. 
+	list_tasks_by_beforeafter(session, twodaysfromnow, today)
       end
 
       #
       # Print overdue tasks
       #
       def list_overdue_tasks(session, line)
-	  dt = DateTime.now
-	  dty = dt - 1
-	  dtstop = DateTime.new(dty.year, dty.month, dty.day, 23, 59, 59)
-	  list_tasks_by_timerange(session, nil, dtstop)
+        today = Date.today
+        # show us everything before today.
+	list_tasks_by_beforeafter(session, today, nil)
       end
 
       #
