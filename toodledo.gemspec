@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{toodledo}
-  s.version = "1.3.8"
+  s.version = "1.4.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Will Sargent}]
-  s.date = %q{2011-06-28}
+  s.date = %q{2012-12-29}
   s.description = %q{This is a Ruby API and client for http://toodledo.com, a task management
 website. It implements all of the calls from Toodledo's developer API, and
 provides a nice wrapper around the functionality.
@@ -49,6 +49,9 @@ tasks with a BetaBrite?  It can all happen.
     "lib/toodledo/command_line/list_goals_command.rb",
     "lib/toodledo/command_line/list_tasks_by_context_command.rb",
     "lib/toodledo/command_line/list_tasks_command.rb",
+    "lib/toodledo/command_line/list_today_command.rb",
+    "lib/toodledo/command_line/list_tomorrow_command.rb",
+    "lib/toodledo/command_line/list_overdue_command.rb",
     "lib/toodledo/command_line/parser_helper.rb",
     "lib/toodledo/command_line/setup_command.rb",
     "lib/toodledo/command_line/stdin_command.rb",

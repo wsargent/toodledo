@@ -26,6 +26,8 @@ You can also use the client in your shell scripts, or use the API directly
 as part of a web application.  Custom private RSS feed?  Want to have the Mac
 read out your top priority?  Input tasks through Quicksilver?  Print out
 tasks with a BetaBrite?  It can all happen.
+
+Check it out: http://aosekai.net/2011/09/quickly-add-new-task-to-toodledo-with-alfred/
     EOF
     gem.homepage = "http://github.com/wsargent/toodledo"
     gem.authors = ["Will Sargent"]

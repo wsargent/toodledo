@@ -1,3 +1,11 @@
+== 1.4.1
+
+* Forgot to update the manifest.
+
+== 1.4.0
+
+* Added "today", "tomorrow" and "overdue" to commands, thx to afrolov.
+
 == 1.3.8
 
 * Rubygems does not allow you to publish the same version, even if yanked.  Thanks SO much.
