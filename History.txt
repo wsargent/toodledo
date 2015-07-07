@@ -1,3 +1,7 @@
+== 1.4.2
+
+* Fix the cmdparse dependencies for fix https://github.com/wsargent/toodledo/issues/9
+
 == 1.4.1
 
 * Forgot to update the manifest.
@@ -67,7 +71,7 @@
 * Add functionality to archive folders.
 * Add stdin command to read from pipe or redirected files
 * Add formatters for the client so it's easier to tweak line output.
-* Add proper priority support to the client (in the format !top, !high, etc.) 
+* Add proper priority support to the client (in the format !top, !high, etc.)
 * Make filter able to take symbols.
 * Change symbol for goals from $ to ^ (was confusing when entering 'I owe $5')
 * Add unit tests for client.
@@ -92,4 +96,3 @@
 == 1.0.0 / 2008-02-10
 
 * First version released!
-
