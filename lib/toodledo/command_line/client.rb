@@ -113,7 +113,9 @@ module Toodledo
         FileUtils::mkdir_p TOODLEDO_D, :mode => 0700 unless test ?d, TOODLEDO_D
         test ?e, CONFIG_F and FileUtils::mv CONFIG_F, "#{CONFIG_F}.bak"
         config = CONFIG[/\A.*(?=^\# AUTOCONFIG)/m]
+        save_umask = File.umask(0077)
         open(CONFIG_F, "w") { |f| f.write config }
+        File.umask(save_umask)
     
         edit = (ENV["EDITOR"] || ENV["EDIT"] || "vi") + " '#{CONFIG_F}'"
         system edit or puts "edit '#{CONFIG_F}'"
