@@ -153,5 +153,10 @@ this instead:
 * toodledo setup (sets up the YAML file with your credentials)
 * toodledo
 
+## TROUBLESHOOTING
+
+* `The server returned a fatal error: invalid userid` - Verify you are using the **unique user id** from https://www.toodledo.com/info/api_doc.php (it seems to always start with `td`). This is different than your account's alias or password. 
+* `The server returned a fatal error: key did not validate` - Verify you are using the correct user id and password.
+
 ## LICENSE:
 		   GPL v3
