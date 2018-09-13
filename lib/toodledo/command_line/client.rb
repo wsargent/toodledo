@@ -943,13 +943,13 @@ __END__
 connection:
 #
 # If you have a Pro account, you can use HTTPS instead of HTTP
-  url: http://www.toodledo.com/api.php
+  url: https://www.toodledo.com/api.php
 
 # 
 # If you are logged in to Toodledo, you should be able to see
 # your userid at this URL: 
 #
-# http://www.toodledo.com/info/api_doc.php
+# https://www.toodledo.com/info/api_doc.php
 #  
   user_id: 
   

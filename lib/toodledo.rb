@@ -32,7 +32,7 @@ module Toodledo
   #  require 'yaml'
   #  config = {
   #    "connection" => { 
-  #      "url" => "http://www.toodledo.com/api.php",
+  #      "url" => "https://www.toodledo.com/api.php",
   #      "user_id" => "<your user id>",
   #      "password" => "<your password>"
   #    }

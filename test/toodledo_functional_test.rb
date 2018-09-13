@@ -9,7 +9,7 @@ class ToodledoFunctionalTest < Test::Unit::TestCase
   include Toodledo
   
   def setup
-    base_url = 'http://www.toodledo.com/api.php'
+    base_url = 'https://www.toodledo.com/api.php'
     
     # (only used for functional testing)
     @email = 'will.sargent+toodledo_ruby_api@gmail.com'

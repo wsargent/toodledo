@@ -22,7 +22,7 @@ module Toodledo
     NO_KEY_SPECIFIED_MESSAGE = 'No Key Specified'
     EXCESSIVE_TOKEN_MESSAGE = 'Excessive API token requests over the last 1 hour.  This user is temporarily blocked.'
 
-    DEFAULT_API_URL = 'http://www.toodledo.com/api.php'
+    DEFAULT_API_URL = 'https://www.toodledo.com/api.php'
 
     USER_AGENT = "Ruby/#{Toodledo::VERSION} (#{RUBY_PLATFORM})"
     
